@@ -7,7 +7,7 @@
 
 ;****************************************************************************
 ;**** At this point: insert path name of the path where this file is located
-(define **Similix-path** "~/Github/Similix/system/")
+(define **Similix-path** "/Users/jay/Developer/Similix/system/")
 ;			  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;****************************************************************************
 
@@ -17,14 +17,14 @@
 ;======== Scheme system dependent definitions begin here: ===================
 
 (define **Similix-source-suffix** ".ss")
-(define **Similix-compiled-suffix** ".scm")
+(define **Similix-compiled-suffix** ".so")
 (define **Similix-compiled-sim-suffix** ".sim")
 
 
 (define _sim-flush-output-port flush-output-port)
 
 (define (_sim-remove-file file)
-  (system (string-append "del " (_sim-string-eval file))))
+  (system (string-append "rm " (_sim-string-eval file))))
 
 (define _sim-compile-file compile-file)
 
