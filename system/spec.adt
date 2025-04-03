@@ -21,31 +21,31 @@
 (defprim 1 _sim-fetch-pgm-adt-file* _sim-fetch-pgm-adt-file*)
 (defprim 1 _sim-fetch-pgm-udp _sim-fetch-pgm-udp)
 
-(defprim 1 _sim-isBottom? _sim-isBottom?)
-(defprim 1 _sim-isStatic? _sim-isStatic?)
-(defprim 1 _sim-isPsds? _sim-isPsds?)
-(defprim 1 _sim-isClosure? _sim-isClosure?)
-(defprim 1 _sim-isDynamic? _sim-isDynamic?)
+(defprim 1 _sim-isbottom? _sim-isbottom?)
+(defprim 1 _sim-isstatic? _sim-isstatic?)
+(defprim 1 _sim-ispsds? _sim-ispsds?)
+(defprim 1 _sim-isclosure? _sim-isclosure?)
+(defprim 1 _sim-isdynamic? _sim-isdynamic?)
 
-(defprim (_sim-isStatic*? e*) (map _sim-isStatic? e*))
+(defprim (_sim-isstatic*? e*) (map _sim-isstatic? e*))
 
-(defprim 1 _sim-isImperative? _sim-isImperative?)
+(defprim 1 _sim-isimperative? _sim-isimperative?)
 
-(defprim 1 _sim-isLift? _sim-isLift?)
-(defprim 1 _sim-isCst? _sim-isCst?)
-(defprim 1 _sim-isVar? _sim-isVar?)
-(defprim 1 _sim-isCond? _sim-isCond?)
-(defprim 1 _sim-isLet? _sim-isLet?)
-(defprim 1 _sim-isLet-unfoldable?  _sim-isLet-unfoldable?)
-(defprim 1 _sim-isBegin? _sim-isBegin?)
-(defprim 1 _sim-isBegin-unfoldable? _sim-isBegin-unfoldable?)
-(defprim 1 _sim-isPrimop? _sim-isPrimop?)
-(defprim 1 _sim-isCstr? _sim-isCstr?)
-(defprim 1 _sim-isSel? _sim-isSel?)
-(defprim 1 _sim-isPred? _sim-isPred?)
-(defprim 1 _sim-isPcall? _sim-isPcall?)
-(defprim 1 _sim-isAbs? _sim-isAbs?)
-(defprim 1 _sim-isApp? _sim-isApp?)
+(defprim 1 _sim-islift? _sim-islift?)
+(defprim 1 _sim-iscst? _sim-iscst?)
+(defprim 1 _sim-isvar? _sim-isvar?)
+(defprim 1 _sim-iscond? _sim-iscond?)
+(defprim 1 _sim-islet? _sim-islet?)
+(defprim 1 _sim-islet-unfoldable?  _sim-islet-unfoldable?)
+(defprim 1 _sim-isbegin? _sim-isbegin?)
+(defprim 1 _sim-isbegin-unfoldable? _sim-isbegin-unfoldable?)
+(defprim 1 _sim-isprimop? _sim-isprimop?)
+(defprim 1 _sim-iscstr? _sim-iscstr?)
+(defprim 1 _sim-issel? _sim-issel?)
+(defprim 1 _sim-ispred? _sim-ispred?)
+(defprim 1 _sim-ispcall? _sim-ispcall?)
+(defprim 1 _sim-isabs? _sim-isabs?)
+(defprim 1 _sim-isapp? _sim-isapp?)
 
 
 (defprim 1 _sim-fetch-def-name _sim-fetch-def-name)
@@ -120,7 +120,7 @@
 (defprim 1 _sim-build-cst _sim-build-resid-cst)
 
 (defprim 1 _sim-build-var _sim-build-resid-var)
-(defprim 1 _sim-isresidVar? _sim-isresidVar?)
+(defprim 1 _sim-isresidvar? _sim-isresidvar?)
 
 (defprim 3 _sim-build-cond _sim-build-resid-cond)
 
@@ -150,7 +150,7 @@
 (defprim 1 _sim-bt-dynamic? _sim-bt-dynamic?)
 (defprim 1 _sim-bt-psds? _sim-bt-psds?)
 
-; These operators access **Similix-udo**, but are not evaluation order
+; these operators access **similix-udo**, but are not evaluation order
 ; dependent; they are therefore declared dynamic rather than opaque
 (defprim-dynamic 2 _sim-delta-reduce _sim-udo-apply*)
 (defprim-dynamic 2 _sim-cstr-reduce _sim-udo-apply*)

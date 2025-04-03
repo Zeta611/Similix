@@ -7,7 +7,7 @@
 
 ;****************************************************************************
 ;**** At this point: insert path name of the path where this file is located
-(define **Similix-path** "~/Github/Similix/system/")
+(define **Similix-path** "~/Developer/Similix/system/")
 ;			  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;****************************************************************************
 
@@ -16,7 +16,7 @@
 ;============================================================================
 ;======== Scheme system dependent definitions begin here: ===================
 
-(verbose 1) ; make Scm silent
+;(verbose 1) ; make Scm silent
 
 (define **Similix-source-suffix** ".scm")
 (define **Similix-compiled-suffix** ".scm") ; No compiler in Scm

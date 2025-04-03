@@ -6,19 +6,19 @@
 ;----------------------------------------------------------------------------
 
 ;****************************************************************************
-;**** At this point: insert path name of the path where this file is located
-(define **Similix-path** "/Users/jay/Developer/Similix/system/")
+;**** at this point: insert path name of the path where this file is located
+(define **similix-path** "/users/jay/developer/similix/system/")
 ;			  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;****************************************************************************
 
 
 
 ;============================================================================
-;======== Scheme system dependent definitions begin here: ===================
+;======== scheme system dependent definitions begin here: ===================
 
-(define **Similix-source-suffix** ".ss")
-(define **Similix-compiled-suffix** ".so")
-(define **Similix-compiled-sim-suffix** ".sim")
+(define **similix-source-suffix** ".ss")
+(define **similix-compiled-suffix** ".so")
+(define **similix-compiled-sim-suffix** ".sim")
 
 
 (define _sim-flush-output-port flush-output-port)
@@ -45,11 +45,11 @@
 
 ;-----------------------------------------------------------------------------
 
-;======== Scheme system dependent definitions end here ======================
+;======== scheme system dependent definitions end here ======================
 ;============================================================================
 
 
 
-(load (string-append **Similix-path** "loadsysf" **Similix-compiled-suffix**))
+(load (string-append **similix-path** "loadsysf" **similix-compiled-suffix**))
 
 ;----------------------------------------------------------------------------

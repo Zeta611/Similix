@@ -5,7 +5,7 @@
 
 ;-----------------------------------------------------------------------------
 
-(load "../system/sim-scm.scm") ; (load "../system/sim-chez.so")
+(load "../system/sim-chez.so")
 
 (load "append.sim")
 (append1 '(1 2 3) '(4 5 6))

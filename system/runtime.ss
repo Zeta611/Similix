@@ -5,52 +5,52 @@
 
 ;-----------------------------------------------------------------------------
 
-(define **Similix-preprocessed-program** 'no-value)
-(define **Similix-last-goal** 'no-value)
-(define **Similix-last-btp** 'no-value)
-(define **Similix-residual-program** 'no-value)
-(define **Similix-cogen-loaded?** #f)
-(define **Similix-current-compiler** 'no-value)
-(define **Similix-current-compiler-loaded?** #f)
+(define **similix-preprocessed-program** 'no-value)
+(define **similix-last-goal** 'no-value)
+(define **similix-last-btp** 'no-value)
+(define **similix-residual-program** 'no-value)
+(define **similix-cogen-loaded?** #f)
+(define **similix-current-compiler** 'no-value)
+(define **similix-current-compiler-loaded?** #f)
 
 ;-----------------------------------------------------------------------------
 
-(define **Similix-dynamic-input-symbol** '***)
+(define **similix-dynamic-input-symbol** '***)
 (define (set-dynamic-input-symbol sym)
-  (set! **Similix-dynamic-input-symbol** sym))
+  (set! **similix-dynamic-input-symbol** sym))
 
 ;-----------------------------------------------------------------------------
 ; verbose
 
-(define **Similix-verbose-prep** #t)
-(define (verbose-prep-on) (set! **Similix-verbose-prep** #t))
-(define (verbose-prep-off) (set! **Similix-verbose-prep** #f))
+(define **similix-verbose-prep** #t)
+(define (verbose-prep-on) (set! **similix-verbose-prep** #t))
+(define (verbose-prep-off) (set! **similix-verbose-prep** #f))
 
-(define **Similix-verbose-spec** 0)
-(define (verbose-spec n) (set! **Similix-verbose-spec** n))
+(define **similix-verbose-spec** 0)
+(define (verbose-spec n) (set! **similix-verbose-spec** n))
 
 ;-----------------------------------------------------------------------------
 
-; Front-ending a program:
+; front-ending a program:
 (define front-end
   (lambda args
     (cond
       ((null? args)
-       (display "Format of input to front-end:") (newline)
+       (display "format of input to front-end:") (newline)
        (display "(front-end goal source-sim-file)")
        (newline))
       ((and (pair? args) (pair? (cdr args)) (null? (cddr args))
 	    (symbol? (car args)) (string? (cadr args)))
        (_sim-front-end (car args) (_sim-normalize-sim-name (cadr args))))
-      (else (_sim-error 'front-end "Incorrect argument syntax: ~s" args)))))
+      (else (_sim-error 'front-end "incorrect argument syntax: ~s" args)))))
       
 
-; Preprocessing a program:
+; preprocessing a program:
 (define preprocess!
   (lambda args
     (cond
       ((null? args)
-       (display "Format of input to preprocess!:") (newline)
+       (display "format of input to preprocess!:") (newline)
        (display "(preprocess! goal bt-pat source-sim-file)")
        (newline))
       ((and (pair? args) (pair? (cdr args)) (pair? (cddr args))
@@ -61,16 +61,16 @@
 	      (btp (map
 		    (lambda (b)
 		      (cond
-			((memv b (list 'd **Similix-dynamic-input-symbol**))
+			((memv b (list 'd **similix-dynamic-input-symbol**))
 			 _sim-bt-dynamic-value)
 			((equal? b 's) _sim-bt-static-value)
 			((or (_sim-bt-static? b) (_sim-bt-dynamic? b)) b)
 			(else (_sim-error
 			       'preprocess!
-			       "Unknown binding time input: ~s" b))))
+			       "unknown binding time input: ~s" b))))
 		    (cadr args)))
 	      (pgm (front-end goal-name (caddr args))))
-	 (set! **Similix-udo**
+	 (set! **similix-udo**
 	       (_sim-fully-lazy-assoc-udo-program
 		(_sim-fetch-pgm-adt-file* pgm)))
 	 
@@ -82,12 +82,12 @@
 	 (display "rl ") (newline)
 	 (_sim-rl-analyse! pgm)
 	 
-	 (set! **Similix-preprocessed-program** pgm)
-	 (set! **Similix-last-goal** goal-name)
-	 (set! **Similix-last-btp** btp)
+	 (set! **similix-preprocessed-program** pgm)
+	 (set! **similix-last-goal** goal-name)
+	 (set! **similix-last-btp** btp)
 	 
 	 'done))
-      (else (_sim-error 'preprocess! "Incorrect argument syntax: ~s" args)))))
+      (else (_sim-error 'preprocess! "incorrect argument syntax: ~s" args)))))
 
 ;-----------------------------------------------------------------------------
 
@@ -125,12 +125,12 @@
 		(if (string? hd)
 		    (let ((name (_sim-normalize-sim-name (car rest))))
 		      (begin (set! rest (cdr rest)) name))
-		    (_sim-error origin "Illegal arguments: ~s" old-rest)))))
+		    (_sim-error origin "illegal arguments: ~s" old-rest)))))
 	 (pp (and (not (null? rest))
 		  (or (equal? (car rest) 'pp)
 		      (_sim-error
 		       origin
-		       "Wrong expression: ~s -- symbol  pp  expected"
+		       "wrong expression: ~s -- symbol  pp  expected"
 		       (car rest))))))
     (c n residual-goal residual-file pp)))
 
@@ -140,7 +140,7 @@
   (lambda args
     (if (null? args)
 	(begin
-	  (display "Format of input to similix:") (newline)
+	  (display "format of input to similix:") (newline)
 	  (display
 	   "(similix goal arg-pat source-sim-file [n] [resid-goal] [resid-sim-file ['pp]])")
 	  (newline)  ; form1
@@ -160,7 +160,7 @@
 	       (goal (case form
 		      ((form1) arg1)
 		      ((form2) (car (cadr args)))
-		      (else **Similix-last-goal**)))
+		      (else **similix-last-goal**)))
 	       (arg-pat (if (equal? form 'form1) (cadr args) arg1))
 	       (pgm (case form
 		      ((form1) (begin
@@ -182,18 +182,18 @@
 			      (_sim-specialize
 			       goal arg-pat pgm residual-goal))
 			    n residual-file pp)))
-	       (set! **Similix-residual-program** result)
+	       (set! **similix-residual-program** result)
 	       (if (null? residual-file)
 		   result
 		   '()))))))))
 
 
-; Conversion of a partially known list of arguments into a binding time pattern
+; conversion of a partially known list of arguments into a binding time pattern
 (define _sim-arg->btp
   (lambda (arg-pat)
-    ; Quick and dirty predicates:
+    ; quick and dirty predicates:
     (let ((unknown? (lambda (arg)
-		      (equal? arg **Similix-dynamic-input-symbol**))))
+		      (equal? arg **similix-dynamic-input-symbol**))))
       (map (lambda (arg)
 	     (if (unknown? arg)
 		 _sim-bt-dynamic-value
@@ -206,7 +206,7 @@
   (lambda args
     (if (null? args)
 	(begin
-	  (display "Format of input to cogen:") (newline)
+	  (display "format of input to cogen:") (newline)
 	  (display "(cogen goal bt-pat source-sim-file [n] [cmp-goal] [cmp-sim-file ['pp]])")
 	  (newline)  ; form1
 	  (display "(cogen prep-pgm [n] [cmp-goal] [cmp-sim-file ['pp]])")
@@ -222,19 +222,19 @@
 	       (goal (case form
 		       ((form1) arg1)
 		       ((form2) (car (car args)))
-		       (else **Similix-last-goal**)))
+		       (else **similix-last-goal**)))
 	       (pgm (case form
 		      ((form1) (begin
 				 (preprocess! goal (cadr args) (caddr args))
 				 (_sim-get-preprocessed-program)))
 		      ((form2) (cadr (car args)))
 		      (else (_sim-get-preprocessed-program)))))
-	  (if (not **Similix-cogen-loaded?**)
+	  (if (not **similix-cogen-loaded?**)
 	      (begin (display "loading compiler generator") (newline)
 		     (load (string-append
-			    **Similix-path** "cogen"
-			    **Similix-compiled-sim-suffix**))
-		     (set! **Similix-cogen-loaded?** #t)))
+			    **similix-path** "cogen"
+			    **similix-compiled-sim-suffix**))
+		     (set! **similix-cogen-loaded?** #t)))
 	  (_sim-n-rg-rf-pp-continue
 	   'cogen
 	   (case form
@@ -248,20 +248,20 @@
 		     (lambda ()
 		       (_sim-cogen
 			(list goal
-			      **Similix-dynamic-input-symbol**
+			      **similix-dynamic-input-symbol**
 			      pgm
-			      **Similix-dynamic-input-symbol**)
+			      **similix-dynamic-input-symbol**)
 			cmp-goal))
 		     n cmp-file pp)))
-	       (set! **Similix-current-compiler** result)
-	       (set! **Similix-current-compiler-loaded?** #f)
+	       (set! **similix-current-compiler** result)
+	       (set! **similix-current-compiler-loaded?** #f)
 	       '())))))))
 
 (define comp
   (lambda args
     (if (null? args)
 	(begin
-	  (display "Format of input to comp:") (newline)
+	  (display "format of input to comp:") (newline)
 	  (display "(comp [cmp-goal] [cmp-file] arg-pat [n] [resid-goal] [resid-sim-file ['pp]])")
 	  (newline))
 	(let* ((cmp-goal
@@ -276,17 +276,17 @@
 		      'current)))
 	       (arg-pat (car args)))
 	  (if (equal? cmp-file 'current)
-	      (if (not **Similix-current-compiler-loaded?**)
-		  (if (equal? **Similix-current-compiler** 'no-value)
-		      (_sim-error 'comp "No current compiler available --- a file name must be specified")
+	      (if (not **similix-current-compiler-loaded?**)
+		  (if (equal? **similix-current-compiler** 'no-value)
+		      (_sim-error 'comp "no current compiler available --- a file name must be specified")
 		      (begin
 			(display "loading current compiler") (newline)
-			(_sim-load-program **Similix-current-compiler**))))
+			(_sim-load-program **similix-current-compiler**))))
 	      (begin
 		(display "loading compiler ") (display cmp-file) (newline)
-		(set! **Similix-current-compiler** (file->list cmp-file))
+		(set! **similix-current-compiler** (file->list cmp-file))
 		(load cmp-file)))
-	  (set! **Similix-current-compiler-loaded?** #t)
+	  (set! **similix-current-compiler-loaded?** #t)
 	  (_sim-n-rg-rf-pp-continue
 	   'comp
 	   (cdr args)
@@ -300,7 +300,7 @@
 			    (_sim-get-top-level-value cmp-goal))
 			arg-pat residual-goal))
 		     n residual-file pp)))
-	       (set! **Similix-residual-program** result)
+	       (set! **similix-residual-program** result)
 	       (if (null? residual-file)
 		   result
 		   '()))))))))
@@ -308,23 +308,23 @@
 ;-----------------------------------------------------------------------------
 
 (define (_sim-get-preprocessed-program)
-  (let ((x **Similix-preprocessed-program**))
+  (let ((x **similix-preprocessed-program**))
     (if (equal? x 'no-value)
 	(_sim-error '_sim-get-preprocessed-program
-		    "No preprocessed program available")
+		    "no preprocessed program available")
 	x)))
 
 ;-----------------------------------------------------------------------------
 
-(define (residual-program) **Similix-residual-program**)
+(define (residual-program) **similix-residual-program**)
 
 (define (load-residual-program)
-  (_sim-load-program **Similix-residual-program**))
+  (_sim-load-program **similix-residual-program**))
 
-(define (current-compiler) **Similix-current-compiler**)
+(define (current-compiler) **similix-current-compiler**)
 
 (define (preprocessed-program)
-  (list **Similix-last-goal** (_sim-get-preprocessed-program)))
+  (list **similix-last-goal** (_sim-get-preprocessed-program)))
 
 ;-----------------------------------------------------------------------------
 
@@ -352,7 +352,7 @@
   (display "(verbose-prep-on) (verbose-prep-off)") (newline)
   (display "(verbose-spec n)") (newline)
 
-  (display "Utilities: (file->item file) (file->list file) (help)") (newline)
+  (display "utilities: (file->item file) (file->list file) (help)") (newline)
   (display "           (ntimes suspension n) (out e) (outnl e) (outpp e) (pp e) (size e)")
   (newline)
   (display "           (writef e file) (writefpp e file) (writel l file) (writelpp l file)")
@@ -362,39 +362,39 @@
 
 (define (reset-similix)
   ; abssyn file:
-  (set! **Similix-show-variable-index** #f)
+  (set! **similix-show-variable-index** #f)
 
   ; langext file:
-  (set! **Similix-udo** '())
-  (set! **Similix-udo-by-programs** '())
-  (set! **Similix-udo-by-files** '())
+  (set! **similix-udo** '())
+  (set! **similix-udo-by-programs** '())
+  (set! **similix-udo-by-files** '())
   
   ; sp file:
-  (set! **Similix-standard-memoization** #t)
+  (set! **similix-standard-memoization** #t)
   
   ; miscspec file:
-  (set! **Similix-name-clash-list** '())
-  (set! **Similix-resid-pgm** '())
-  (set! **Similix-seenb4** '())
-  (set! **Similix-proc-name-generator** '(0))
-  (set! **Similix-var-name-generator** '(0))
+  (set! **similix-name-clash-list** '())
+  (set! **similix-resid-pgm** '())
+  (set! **similix-seenb4** '())
+  (set! **similix-proc-name-generator** '(0))
+  (set! **similix-var-name-generator** '(0))
   
   ; runtime file:
-  (set! **Similix-preprocessed-program** 'no-value)
-  (set! **Similix-last-goal** 'no-value)
-  (set! **Similix-last-btp** 'no-value)
-  (set! **Similix-residual-program** 'no-value)
-  (set! **Similix-cogen-loaded?** #f)
-  (set! **Similix-current-compiler** 'no-value)
-  (set! **Similix-current-compiler-loaded?** #f)
-  (set! **Similix-dynamic-input-symbol** '***)
-  (set! **Similix-verbose-prep** #t)
-  (set! **Similix-verbose-spec** 0)
+  (set! **similix-preprocessed-program** 'no-value)
+  (set! **similix-last-goal** 'no-value)
+  (set! **similix-last-btp** 'no-value)
+  (set! **similix-residual-program** 'no-value)
+  (set! **similix-cogen-loaded?** #f)
+  (set! **similix-current-compiler** 'no-value)
+  (set! **similix-current-compiler-loaded?** #f)
+  (set! **similix-dynamic-input-symbol** '***)
+  (set! **similix-verbose-prep** #t)
+  (set! **similix-verbose-spec** 0)
 
   ; post file:
-  (set! **Similix-postunfold** #t)
-  (set! **Similix-optimize-standard-primops** #t)
-  (set! **Similix-optimize-sim-primops** #t)
+  (set! **similix-postunfold** #t)
+  (set! **similix-optimize-standard-primops** #t)
+  (set! **similix-optimize-sim-primops** #t)
 
   '())
 

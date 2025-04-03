@@ -64,9 +64,9 @@
 	 
 
 	 ; ----------------------------------------------------------------
-	 ; During flow, bt- and eod-analyses, bt- and eod-fields in abstract
+	 ; during flow, bt- and eod-analyses, bt- and eod-fields in abstract
 	 ; syntax are used for flow, bt- and eod-nodes.
-	 ; When annotating, the fields are set to bt- and eod-values.
+	 ; when annotating, the fields are set to bt- and eod-values.
 
 	 (def-fetch _sim-fetch-def-btp)
 	 (init-def-fields!
@@ -118,8 +118,8 @@
 	 (bt-constraints-closure<= '())
 	 (bt-constraints-=dynamic '())
 	 
-	 (eod-constraint-<=M '())
-	 (eod-constraint-=I '())
+	 (eod-constraint-<=m '())
+	 (eod-constraint-=i '())
 	 )
     
     (define (make-node info)
@@ -143,7 +143,7 @@
 	((reset) (set! seed 0))
 	((next) (let ((res seed)) (set! seed (+ 1 seed)) res))
 	(else seed)))
-    (genint! 'reset) ; For debugging only
+    (genint! 'reset) ; for debugging only
 
     (let* ((init-bt-info (lambda () (vector 'bt-undef '() '() '() #f)))
 	   (init-eod-info (lambda () (vector 'eod-undef '() '() '())))
@@ -265,7 +265,7 @@
 
 
       ;**********************************************************************
-      ; Union/find definitions
+      ; union/find definitions
       ;**********************************************************************
       
       (define (find! node)
@@ -285,7 +285,7 @@
 	(let ((rank1 (.rank node1))
 	      (rank2 (.rank node2)))
 	  (cond
-	    ((eq? node1 node2) (_sim-error 'union! "Nodes equal!"))
+	    ((eq? node1 node2) (_sim-error 'union! "nodes equal!"))
 	    ((is-top? node1)
 	     (union! node2 node1))
 	    ((is-top? node2)
@@ -307,7 +307,7 @@
 
 
       ;**********************************************************************
-      ; Flow analysis
+      ; flow analysis
       ;**********************************************************************
       
       (define (flow-analysis!)
@@ -321,11 +321,11 @@
 	  
 	  (define (loop! e rf)
 	    (cond
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       (record! e (gen-flow-node!)))
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       (record! e (_sim-lookup-var e rf)))
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (let ((then-exp (_sim-fetch-cond-then e))
 		     (else-exp (_sim-fetch-cond-else e)))
 		 (loop! (_sim-fetch-cond-test e) rf)
@@ -334,18 +334,18 @@
 		   (loop! else-exp rf)
 		   (add-flow-constraint-=! flow-then (fetch-flow else-exp))
 		   (record! e flow-then))))
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (let ((body (_sim-fetch-let-body e))
 		     (actual (_sim-fetch-let-actual e)))
 		 (loop! actual rf)
 		 (loop! body (cons (fetch-flow actual) rf))
 		 (record! e (fetch-flow body))))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (let ((snd (_sim-fetch-begin-snd e)))
 		 (loop! (_sim-fetch-begin-fst e) rf)
 		 (loop! snd rf)
 		 (record! e (fetch-flow snd))))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (let ((flow (gen-flow-node!)))
 		 (for-each (lambda (ei)
 			     (loop! ei rf)
@@ -358,7 +358,7 @@
 		    (record! e (gen-flow-node!)))
 		   (else
 		    (record! e flow)))))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (let ((flow (gen-flow-node!))
 		     (index (_sim-fetch-cstr-index e)))
 		 (add-flow-constraint-cstr-in!
@@ -372,7 +372,7 @@
 			(_sim-fetch-cstr-args e)))
 		  flow)
 		 (record! e flow)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (let* ((arg (_sim-fetch-sel-arg e))
 		      (flow (gen-flow-node!))
 		      (bt (gen-bt-node!))
@@ -397,10 +397,10 @@
 		  (fetch-flow arg))
 		 (record! e flow)
 		 (set-bt! e bt)))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (loop! (_sim-fetch-pred-arg e) rf)
 	       (record! e (gen-flow-node!)))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (let* ((d (_sim-fetch-udp-def udp e)))
 		 (for-each (lambda (ei flowi)
 			     (loop! ei rf)
@@ -408,7 +408,7 @@
 			   (_sim-fetch-pcall-args e)
 			   (fetch-def-flow* d))
 		 (record! e (fetch-flow (_sim-fetch-def-exp d)))))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (let* ((body (_sim-fetch-abs-body e))
 		      (flow (gen-flow-node!))
 		      (~bt1 (gen-bt-node!))
@@ -437,7 +437,7 @@
 		 (record! e flow)
 		 (set-~bt! body ~bt1)
 		 (set-eod! body eod1)))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (let* ((e0 (_sim-fetch-app-exp e))
 		      (e* (_sim-fetch-app-args e))
 		      (arity (length e*))
@@ -525,11 +525,11 @@
 	      (let ((in-sb4-type-index*? (solve-cstr*! cstr* cstr index)))
 		(if (not (equal? in-sb4-type-index*? "exit"))
 		    (begin
-		      (if **Similix-verbose-prep**
+		      (if **similix-verbose-prep**
 			  (if (not (or (null? cstr*) in-sb4-type-index*?))
 			      (begin
 				(newline)
-				(display "Warning: constructor ")
+				(display "warning: constructor ")
 				(display (get-name index))
 				(display " mixed with constructors")
 				(newline)
@@ -569,12 +569,12 @@
 	      (let ((sb4-arity* (solve-fct*! fct* fct arity)))
 		(if (not (equal? sb4-arity* "exit"))
 		    (begin
-		      (if **Similix-verbose-prep**
+		      (if **similix-verbose-prep**
 			  (if (not (or (null? sb4-arity*)
 				       (member arity sb4-arity*)))
 			      (begin
 				(newline)
-				(display "Warning: abstraction with arity ")
+				(display "warning: abstraction with arity ")
 				(display arity)
 				(display " mixed with arities ")
 				(newline)
@@ -634,7 +634,7 @@
 
       
       ;**********************************************************************
-      ; Binding-time and is-used analyses
+      ; binding-time and is-used analyses
       ;**********************************************************************
       
       (define (bt-analysis!)
@@ -652,17 +652,17 @@
 		  (cons (make-!> bt1 bt2) bt-constraints-!>)))
 	  (define (add-bt-constraint-static<=! bt)
 	    (set! bt-constraints-static<=
-		  (cons (make-static/psds/closure<= (make-btval 'S) bt)
+		  (cons (make-static/psds/closure<= (make-btval 's) bt)
 			bt-constraints-static<=)))
 	  (define (add-bt-constraint-psds<=! type-index bt)
 	    (set! bt-constraints-psds<=
 		  (cons (make-static/psds/closure<=
-			 (make-btval 'Ps type-index) bt)
+			 (make-btval 'ps type-index) bt)
 			bt-constraints-psds<=)))
 	  (define (add-bt-constraint-closure<=! arity bt)
 	    (set! bt-constraints-closure<=
 		  (cons (make-static/psds/closure<=
-			 (make-btval 'Cl arity) bt)
+			 (make-btval 'cl arity) bt)
 			bt-constraints-closure<=)))
 	  
 	  (define (record! e bt ~bt)
@@ -675,14 +675,14 @@
 	  
 	  (define (loop! e rb ~bt)
 	    (cond
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       (let ((bt (gen-bt-node!)))
 		 (add-bt-constraint-static<=! bt)
 		 (add-bt-constraint-used! bt)
 		 (record! e bt ~bt)))
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       (record! e (_sim-lookup-var e rb) ~bt))
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (let ((bt (gen-bt-node!))
 		     (~bt1 (gen-bt-node!)))
 		 (loop! (_sim-fetch-cond-test e) rb ~bt1)
@@ -690,37 +690,37 @@
 		 (loop! (_sim-fetch-cond-else e) rb bt)
 		 (add-bt-constraint-static<=! ~bt1)
 		 (add-bt-constraint-used! ~bt1)
-		 (if **Similix-standard-memoization**
+		 (if **similix-standard-memoization**
 		     (add-bt-constraint-!>! ~bt1 bt))
 		 (record! e bt ~bt)))
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (let ((bt (gen-bt-node!))
 		     (~bt1 (gen-bt-node!)))
 		 (loop! (_sim-fetch-let-actual e) rb ~bt1)
 		 (loop! (_sim-fetch-let-body e) (cons ~bt1 rb) bt)
 		 (record! e bt ~bt)))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (let ((bt (gen-bt-node!))
 		     (~bt1 (gen-bt-node!)))
 		 (loop! (_sim-fetch-begin-fst e) rb ~bt1)
 		 (loop! (_sim-fetch-begin-snd e) rb bt)
 		 (record! e bt ~bt)))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (let ((bt (gen-bt-node!))
 		     (referentiality (_sim-fetch-primop-referentiality e)))
 		 (for-each (lambda (ei) (loop! ei rb bt))
 			   (_sim-fetch-primop-args e))
 		 (cond
-		   ; Special treatment of aborting primitives;
-		   ; All arguments dynamic:
+		   ; special treatment of aborting primitives;
+		   ; all arguments dynamic:
 		   ((member referentiality '(abort abort-eoi))
 		    (add-bt-constraint-=dynamic! bt)
-		    ; Result value independent of arguments:
+		    ; result value independent of arguments:
 		    ; result's bt and ~bt equal;
 		    (record! e ~bt ~bt))
 		   ((memv referentiality '(transparent transparent-if-needed))
 		    (add-bt-constraint-static<=! bt)
-		    ; Another option is to remove the following constraint
+		    ; another option is to remove the following constraint
 		    ; (but that generates horrible residual code):
 		    (if (not (equal? 'transparent-if-needed referentiality))
 			(add-bt-constraint-used! bt))
@@ -728,7 +728,7 @@
 		   (else
 		    (add-bt-constraint-=dynamic! bt)
 		    (record! e bt ~bt)))))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (let ((bt (gen-bt-node!))
 		     (index (_sim-fetch-cstr-index e)))
 		 (for-each (lambda (ei)
@@ -738,7 +738,7 @@
 			   (_sim-fetch-cstr-args e))
 		 (add-bt-constraint-psds<=! (get-type-index index) bt)
 		 (record! e bt ~bt)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (let* ((bt (fetch-bt e))
 		      (~bt1 (gen-bt-node!)))
 		 (loop! (_sim-fetch-sel-arg e) rb ~bt1)
@@ -746,7 +746,7 @@
 		 (add-bt-constraint-psds<=!
 		  (get-type-index (_sim-fetch-sel-cstrindex e)) ~bt1)
 		 (record! e bt ~bt)))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (let* ((bt (gen-bt-node!))
 		      (~bt1 (gen-bt-node!)))
 		 (loop! (_sim-fetch-pred-arg e) rb ~bt1)
@@ -756,14 +756,14 @@
 		 (add-bt-constraint-used! bt)
 		 (add-bt-constraint-static<=! bt)
 		 (record! e bt ~bt)))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (let* ((d (_sim-fetch-udp-def udp e))
 		      (bt (fetch-~bt (_sim-fetch-def-exp d))))
 		 (for-each (lambda (ei bti) (loop! ei rb bti))
 			   (_sim-fetch-pcall-args e)
 			   (fetch-def-bt* d))
 		 (record! e bt ~bt)))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (let* ((body (_sim-fetch-abs-body e))
 		      (bt (gen-bt-node!))
 		      (~bt1 (fetch-~bt body))
@@ -783,7 +783,7 @@
 		 (add-bt-constraint-closure<=! arity bt)
 		 (add-bt-constraint-!>! bt ~bt1)
 		 (record! e bt ~bt)))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (let* ((e0 (_sim-fetch-app-exp e))
 		      (e* (_sim-fetch-app-args e))
 		      (arity (length e*))
@@ -832,7 +832,7 @@
 		(add-bt-constraint-used! bt))
 	       (else
 		(_sim-error '_sim-bt-analyse!
-			    "Unexpected binding time value ~s in input"
+			    "unexpected binding time value ~s in input"
 			    btv))))
 	   (fetch-def-bt* goal-def) input-btp)
 	  )
@@ -940,53 +940,53 @@
 		((equal? (btnode.btval bt) 'bt-undef) _sim-bt-bottom-value)
 		(else
 		 (case (btnode.btval.val bt)
-		   ((Ps) _sim-bt-psds-value)
-		   ((Cl) _sim-bt-closure-value)
-		   ((S)
+		   ((ps) _sim-bt-psds-value)
+		   ((cl) _sim-bt-closure-value)
+		   ((s)
 		    (if (btnode.used bt)
 			_sim-bt-static-value
 			_sim-bt-dynamic-value))
 		   (else
 		    (_sim-error
 		     'find-bt!
-		     "Internal error: ~s" (btnode.btval.val bt))))))))
+		     "internal error: ~s" (btnode.btval.val bt))))))))
 	  (define (find-bt!* bt*) (map find-bt! bt*))
 	  (define (loop! e)
 	    (cond
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       "nothing")
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       "nothing")
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (_sim-set-cond-test! e (loop! (_sim-fetch-cond-test e)))
 	       (_sim-set-cond-then! e (loop! (_sim-fetch-cond-then e)))
 	       (_sim-set-cond-else! e (loop! (_sim-fetch-cond-else e)))
 	       )
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (_sim-set-let-actual! e (loop! (_sim-fetch-let-actual e)))
 	       (_sim-set-let-body! e (loop! (_sim-fetch-let-body e))))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (let ((fst (_sim-fetch-begin-fst e)))
 		 (_sim-set-begin-fst! e (loop! fst))
 		 (_sim-set-begin-snd! e (loop! (_sim-fetch-begin-snd e)))
-		 (if (_sim-isDynamic? fst)
+		 (if (_sim-isdynamic? fst)
 		     (_sim-raise-begin-unfoldability! e))))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (loop*! (_sim-fetch-primop-args e)))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (loop*! (_sim-fetch-cstr-args e)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (_sim-set-sel-arg! e (loop! (_sim-fetch-sel-arg e))))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (_sim-set-pred-arg! e (loop! (_sim-fetch-pred-arg e))))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (loop*! (_sim-fetch-pcall-args e)))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (_sim-set-abs-formals-btp!
 		e (find-bt!* (fetch-abs-formals-bt* e)))
 	       (loop*! (_sim-fetch-abs-free-variables e))
 	       (_sim-set-abs-body! e (loop! (_sim-fetch-abs-body e))))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (_sim-set-app-exp! e (loop! (_sim-fetch-app-exp e)))
 	       (loop*! (_sim-fetch-app-args e)))
 	      (else
@@ -1006,7 +1006,7 @@
 		 (_sim-set-bt-tag! e btv) e)
 		(else
 		 (_sim-error 'bt-analysis-annotate!
-			     "Internal error -- unexpected bt-values: ~s and ~s -- expression: ~s"
+			     "internal error -- unexpected bt-values: ~s and ~s -- expression: ~s"
 			     btv ~btv (_sim-show-e e udp))
 		 ))))
 	  (define (loop*! e*)
@@ -1029,7 +1029,7 @@
       
       
       ;**********************************************************************
-      ; Evaluation-order dependency analysis
+      ; evaluation-order dependency analysis
       ;**********************************************************************
 
       (define (eod-analysis!)
@@ -1040,10 +1040,10 @@
 	    (eodnode.bdown-dep:=+ (find! eod1) eod2))
 	  (define (add-eod-constraint-<=! eod1 eod2)
 	    (eodnode.b<=-dep:=+ (find! eod1) eod2))
-	  (define (add-eod-constraint-<=M! eod)
-	    (set! eod-constraint-<=M (cons eod eod-constraint-<=M)))
-	  (define (add-eod-constraint-=I! eod)
-	    (set! eod-constraint-=I (cons eod eod-constraint-=I)))
+	  (define (add-eod-constraint-<=m! eod)
+	    (set! eod-constraint-<=m (cons eod eod-constraint-<=m)))
+	  (define (add-eod-constraint-=i! eod)
+	    (set! eod-constraint-=i (cons eod eod-constraint-=i)))
 	  (define (add-eod-constraint-down*! e* eod)
 	    (if (not (null? e*))
 		(begin
@@ -1057,21 +1057,21 @@
 			     eod)
 			   (fetch-eod e))))
 	      (cond
-		((_sim-isLift? e)
+		((_sim-islift? e)
 		 (add-eod-constraint-<=! (loop! (_sim-fetch-lift-arg e)) eod))
-		((_sim-isCst? e)
+		((_sim-iscst? e)
 		 "nothing")
-		((_sim-isVar? e)
+		((_sim-isvar? e)
 		 "nothing")
-		((_sim-isCond? e)
+		((_sim-iscond? e)
 		 (let* ((cond-test (_sim-fetch-cond-test e))
 			(cond-then (_sim-fetch-cond-then e))
 			(eod-then (loop! cond-then))
 			(eod-else (loop! (_sim-fetch-cond-else e))))
 		   (add-eod-constraint-<=! (loop! cond-test) eod)
-		   (if (and (_sim-isDynamic? cond-test)
-			    (_sim-isDynamic? cond-then))
-		       ; (_sim-isDynamic? cond-else) also holds;
+		   (if (and (_sim-isdynamic? cond-test)
+			    (_sim-isdynamic? cond-then))
+		       ; (_sim-isdynamic? cond-else) also holds;
 		       ; specializer initializes continuation, therefore
 		       ; up-constraints generated
 		       (begin (add-eod-constraint-up! eod-then eod)
@@ -1080,46 +1080,46 @@
 		       ; therefore <=-constraints generated
 		       (begin (add-eod-constraint-<=! eod-then eod)
 			      (add-eod-constraint-<=! eod-else eod)))))
-		((_sim-isLet? e)
+		((_sim-islet? e)
 		 (add-eod-constraint-down!
 		  (loop! (_sim-fetch-let-actual e)) eod)
 		 (add-eod-constraint-<=! (loop! (_sim-fetch-let-body e)) eod))
-		((_sim-isBegin? e)
+		((_sim-isbegin? e)
 		 (add-eod-constraint-down!
 		  (loop! (_sim-fetch-begin-fst e)) eod)
 		 (add-eod-constraint-<=! (loop! (_sim-fetch-begin-snd e)) eod))
-		((_sim-isPrimop? e)
+		((_sim-isprimop? e)
 		 (let ((e* (_sim-fetch-primop-args e))
 		       (referentiality (_sim-fetch-primop-referentiality e)))
 		   (cond
-		     ; Special treatment of aborting primitives:
+		     ; special treatment of aborting primitives:
 		     ((equal? referentiality 'abort)
 		      (for-each loop! e*)
-		      (add-eod-constraint-<=M! eod))
+		      (add-eod-constraint-<=m! eod))
 		     ((equal? referentiality 'opaque)
 		      (for-each loop! e*)
-		      (add-eod-constraint-=I! eod))
+		      (add-eod-constraint-=i! eod))
 		     (else ; note that abort-eoi case is included here
 		      (add-eod-constraint-down*! e* eod)))))
-		((_sim-isCstr? e)
+		((_sim-iscstr? e)
 		 (add-eod-constraint-down*! (_sim-fetch-cstr-args e) eod))
-		((_sim-isSel? e)
+		((_sim-issel? e)
 		 (add-eod-constraint-<=! (loop! (_sim-fetch-sel-arg e)) eod))
-		((_sim-isPred? e)
+		((_sim-ispred? e)
 		 (add-eod-constraint-<=! (loop! (_sim-fetch-pred-arg e)) eod))
-		((_sim-isPcall? e)
+		((_sim-ispcall? e)
 		 (let* ((d (_sim-fetch-udp-def udp e))
 			(eod-body (fetch-eod (_sim-fetch-def-exp d))))
 		   (add-eod-constraint-down*! (_sim-fetch-pcall-args e) eod)
 		   (if (_sim-unfoldable-procedure? d)
 		       (add-eod-constraint-<=! eod-body eod)
 		       (add-eod-constraint-up! eod-body eod))))
-		((_sim-isAbs? e)
+		((_sim-isabs? e)
 		 (for-each loop! (_sim-fetch-abs-free-variables e))
 		 (let ((eod-body (loop! (_sim-fetch-abs-body e))))
-		   (if (_sim-isDynamic? e)
+		   (if (_sim-isdynamic? e)
 		       (add-eod-constraint-up! eod-body eod-body))))
-		((_sim-isApp? e)
+		((_sim-isapp? e)
 		 (let* ((exp (_sim-fetch-app-exp e))
 			(eod-exp (loop! exp)))
 		   (add-eod-constraint-down*! (_sim-fetch-app-args e) eod)
@@ -1142,66 +1142,66 @@
 	
 	
 	(define (solve-eod-constraints!)
-	  (define (solve-eod-constraint-<=M! eod)
+	  (define (solve-eod-constraint-<=m! eod)
 	    (let ((eod (find! eod)))
-	      (if (not (or (is-imp? eod) (equal? (eodnode.eodval eod) 'M)))
+	      (if (not (or (is-imp? eod) (equal? (eodnode.eodval eod) 'm)))
 		  (let ((b<=-dep (eodnode.b<=-dep eod))
 			(bup-dep (eodnode.bup-dep eod))
 			(bdown-dep (eodnode.bdown-dep eod)))
-		    (eodnode.eodval:= eod 'M)
-		    (for-each solve-eod-constraint-<=M! b<=-dep)
+		    (eodnode.eodval:= eod 'm)
+		    (for-each solve-eod-constraint-<=m! b<=-dep)
 		    (eodnode.bdown-dep:= eod '())
-		    (for-each solve-eod-constraint-<=M! bdown-dep)
+		    (for-each solve-eod-constraint-<=m! bdown-dep)
 		    (eodnode.bup-dep:= eod '())
-		    (for-each solve-eod-constraint-=I! bup-dep)))))
-	  (define (solve-eod-constraint-=I! eod)
+		    (for-each solve-eod-constraint-=i! bup-dep)))))
+	  (define (solve-eod-constraint-=i! eod)
 	    (let ((eod (find! eod)))
 	      (if (not (is-imp? eod))
 		  (let ((b<=-dep (eodnode.b<=-dep eod))
 			(bup-dep (eodnode.bup-dep eod))
 			(bdown-dep (eodnode.bdown-dep eod)))
 		    (union! eod the-imp-eod-node)
-		    (for-each solve-eod-constraint-=I! b<=-dep)
-		    (for-each solve-eod-constraint-<=M! bdown-dep)
-		    (for-each solve-eod-constraint-=I! bup-dep)))))
+		    (for-each solve-eod-constraint-=i! b<=-dep)
+		    (for-each solve-eod-constraint-<=m! bdown-dep)
+		    (for-each solve-eod-constraint-=i! bup-dep)))))
 	  
-	  (for-each solve-eod-constraint-<=M! eod-constraint-<=M)
-	  (for-each solve-eod-constraint-=I! eod-constraint-=I))
+	  (for-each solve-eod-constraint-<=m! eod-constraint-<=m)
+	  (for-each solve-eod-constraint-=i! eod-constraint-=i))
 	
 	
 	(define (eod-analysis-annotate!)
 	  (define (loop! e)
 	    (cond
-	      ((_sim-isLift? e)
+	      ((_sim-islift? e)
 	       (loop! (_sim-fetch-lift-arg e)))
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       "nothing")
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       "nothing")
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (loop! (_sim-fetch-cond-test e))
 	       (loop! (_sim-fetch-cond-then e))
 	       (loop! (_sim-fetch-cond-else e)))
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (loop! (_sim-fetch-let-actual e))
 	       (loop! (_sim-fetch-let-body e)))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (loop! (_sim-fetch-begin-fst e))
 	       (loop! (_sim-fetch-begin-snd e)))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (for-each loop! (_sim-fetch-primop-args e)))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (for-each loop! (_sim-fetch-cstr-args e)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (loop! (_sim-fetch-sel-arg e)))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (loop! (_sim-fetch-pred-arg e)))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (for-each loop! (_sim-fetch-pcall-args e)))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (for-each loop! (_sim-fetch-abs-free-variables e))
 	       (loop! (_sim-fetch-abs-body e)))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (loop! (_sim-fetch-app-exp e))
 	       (for-each loop! (_sim-fetch-app-args e)))
 	      (else
@@ -1212,7 +1212,7 @@
 	     (let ((eod (find! (fetch-eod e))))
 	       (cond
 		 ((is-imp? eod) _sim-eod-imperative-value)
-		 ((equal? (eodnode.eodval eod) 'M) _sim-eod-mixed-value)
+		 ((equal? (eodnode.eodval eod) 'm) _sim-eod-mixed-value)
 		 (else _sim-eod-bottom-value)))))
 	  
 	  (_sim-vector-for-each
@@ -1226,12 +1226,12 @@
 
 
       ;**********************************************************************
-      ; Main program
+      ; main program
       ;**********************************************************************
 
       (if (not (= goal-arity input-arity))
 	  (_sim-error '_sim-bt-analyse!
-		      "Arity mismatch: the goal procedure has arity ~s -- the supplied input has arity ~s"
+		      "arity mismatch: the goal procedure has arity ~s -- the supplied input has arity ~s"
 		      goal-arity input-arity))
       
       (display "flow ") (_sim-flush-output-port)

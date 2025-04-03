@@ -18,77 +18,77 @@
 ;----------------------------------------------------------------------------
 ; Temporary file used by Similix:
 
-(define **Similix-tmp-file** "_simtmp")
+(define **similix-tmp-file** "_simtmp")
 
 ;-----------------------------------------------------------------------------
 
-(define **Similix-library** **Similix-path**)
+(define **similix-library** **similix-path**)
 
 ;-----------------------------------------------------------------------------
 
 (display "util ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "util" **Similix-compiled-suffix**))
+       **similix-path** "util" **similix-compiled-suffix**))
 
 (display "langext ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "langext" **Similix-compiled-suffix**))
+       **similix-path** "langext" **similix-compiled-suffix**))
 
 (display "abssyn ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "abssyn" **Similix-compiled-suffix**))
+       **similix-path** "abssyn" **similix-compiled-suffix**))
 
 (display "miscspec ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "miscspec" **Similix-compiled-suffix**))
+       **similix-path** "miscspec" **similix-compiled-suffix**))
 
 (display "runtime ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "runtime" **Similix-compiled-suffix**))
+       **similix-path** "runtime" **similix-compiled-suffix**))
 
 (display "front ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "front" **Similix-compiled-suffix**))
+       **similix-path** "front" **similix-compiled-suffix**))
 
 (display "lam-lift ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "lam-lift" **Similix-compiled-suffix**))
+       **similix-path** "lam-lift" **similix-compiled-suffix**))
 
 (display "bt-eod ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "bt-eod" **Similix-compiled-suffix**))
+       **similix-path** "bt-eod" **similix-compiled-suffix**))
 
 (display "sp ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "sp" **Similix-compiled-suffix**))
+       **similix-path** "sp" **similix-compiled-suffix**))
 
 (display "oc ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "oc" **Similix-compiled-suffix**))
+       **similix-path** "oc" **similix-compiled-suffix**))
 
 (display "rl ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "rl" **Similix-compiled-suffix**))
+       **similix-path** "rl" **similix-compiled-suffix**))
 
 (display "post ")
 (_sim-flush-output-port)
 (load (string-append
-       **Similix-path** "post" **Similix-compiled-suffix**))
+       **similix-path** "post" **similix-compiled-suffix**))
 
 (display "spec ")
 (newline)
 (load (string-append
-       **Similix-path** "spec" **Similix-compiled-sim-suffix**))
+       **similix-path** "spec" **similix-compiled-sim-suffix**))
 
 ;----------------------------------------------------------------------------

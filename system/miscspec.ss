@@ -5,39 +5,39 @@
 
 ;-----------------------------------------------------------------------------
 
-(define **Similix-name-clash-list** '())
+(define **similix-name-clash-list** '())
 
-(define **Similix-resid-pgm** '())
+(define **similix-resid-pgm** '())
 (define (_sim-add-residual-definition! rd)
-  (set! **Similix-resid-pgm** (cons rd **Similix-resid-pgm**)))
-(define (_sim-get-residual-program!) **Similix-resid-pgm**)
+  (set! **similix-resid-pgm** (cons rd **similix-resid-pgm**)))
+(define (_sim-get-residual-program!) **similix-resid-pgm**)
 
 (define (_sim-initialize-magic! adt-file*)
-  (set! **Similix-udo** (_sim-fully-lazy-assoc-udo-program adt-file*))
-  (set! **Similix-name-clash-list**
+  (set! **similix-udo** (_sim-fully-lazy-assoc-udo-program adt-file*))
+  (set! **similix-name-clash-list**
 	(_sim-fully-lazy-assoc-udo-program-ncl adt-file*))
-  (_sim-init-number-generator! **Similix-proc-name-generator**)
-  (_sim-init-number-generator! **Similix-var-name-generator**)
-  (set! **Similix-resid-pgm** '())
-  (set! **Similix-seenb4** '()))
+  (_sim-init-number-generator! **similix-proc-name-generator**)
+  (_sim-init-number-generator! **similix-var-name-generator**)
+  (set! **similix-resid-pgm** '())
+  (set! **similix-seenb4** '()))
 
-(define **Similix-seenb4** '())
+(define **similix-seenb4** '())
 (define _sim-seenb4?
-  (lambda (name actuals **Similix-seenb4**)
-    (if (null? **Similix-seenb4**)
+  (lambda (name actuals **similix-seenb4**)
+    (if (null? **similix-seenb4**)
 	#f
-	(let ((item (car **Similix-seenb4**)))
+	(let ((item (car **similix-seenb4**)))
 	  (if (and (equal? name (car item))
 		   (_sim-seenb4-equal? actuals (cadr item)))
 	      item
-	      (_sim-seenb4? name actuals (cdr **Similix-seenb4**)))))))
+	      (_sim-seenb4? name actuals (cdr **similix-seenb4**)))))))
 
 (define _sim-seenb4-equal? equal?)
 
 
-(define **Similix-proc-name-generator** '(0))
+(define **similix-proc-name-generator** '(0))
 (define (_sim-generate-proc-name! name projected*)
-  (let ((flag (_sim-seenb4? name projected* **Similix-seenb4**)))
+  (let ((flag (_sim-seenb4? name projected* **similix-seenb4**)))
     (if flag
 	(begin
 	  (_sim-list-set! flag 3 (+ 1 (list-ref flag 3)))
@@ -47,26 +47,26 @@
 		   ()
 		 (let ((rn (_sim-sym/num/string-append
 			    name "-" (_sim-next-number!
-				      **Similix-proc-name-generator**))))
-		   (if (member rn **Similix-name-clash-list**)
+				      **similix-proc-name-generator**))))
+		   (if (member rn **similix-name-clash-list**)
 		       (loop)
 		       rn)))))
-	  (if (> **Similix-verbose-spec** 0)
+	  (if (> **similix-verbose-spec** 0)
 	      (begin (display (_sim-sym/num/string-append 'sp: name))
 		     (display " ")
 		     (_sim-flush-output-port)))
-	  (set! **Similix-seenb4**
+	  (set! **similix-seenb4**
 		(cons (list name projected* residual-name 1)
-		      **Similix-seenb4**))
+		      **similix-seenb4**))
 	  (cons residual-name #f)))))
 
 (define (_sim-pcall-test-output! name)
-  (if (= **Similix-verbose-spec** 2)
+  (if (= **similix-verbose-spec** 2)
       (begin (display name) (display " ") (_sim-flush-output-port))))
 
-(define **Similix-var-name-generator** '(0))
+(define **similix-var-name-generator** '(0))
 (define (_sim-generate-var-name! name)
-  (cons name (_sim-next-number! **Similix-var-name-generator**)))
+  (cons name (_sim-next-number! **similix-var-name-generator**)))
 
 (define _sim-next-number!
   (lambda (n)
@@ -95,7 +95,7 @@
 	       (loop (+ 1 i)))))))
 
 ;-----------------------------------------------------------------------------
-; Caching during generation of parameters when specializing calls
+; caching during generation of parameters when specializing calls
 ;
 ; ca ::= (ca-d ca-ps ca-cl (pos . pos)*)
 ; ca-d  ::= ((v new-v p pos)*)
@@ -148,14 +148,14 @@
 (define _sim-pos-pairs-in-cache cadddr)
 
 ;-----------------------------------------------------------------------------
-; Let-expressions
+; let-expressions
 
 (define (_sim-select-value rexp residual-formal)
-  (if (_sim-isresidVar? rexp)
+  (if (_sim-isresidvar? rexp)
       rexp
       (_sim-build-var residual-formal)))
 (define (_sim-conditional-build-let residual-formal eod rexp body)
-  (if (_sim-isresidVar? rexp)
+  (if (_sim-isresidvar? rexp)
       body
       (_sim-build-resid-let residual-formal eod rexp body)))
 

@@ -93,7 +93,7 @@
 
 (define (compile-sim-file file)
   (let* ((file (_sim-strip-sim-name file))
-	 (tmp-file (string-append file **Similix-source-suffix**))
+	 (tmp-file (string-append file **similix-source-suffix**))
 	 (p (_sim-compile-casematch (string-append file ".sim"))))
     (writel p tmp-file)
     (_sim-compile-file tmp-file)
@@ -103,12 +103,12 @@
 (define (compile-and-load-sim-file file)
   (compile-sim-file file)
   (load (string-append (_sim-strip-sim-name file)
-		       **Similix-compiled-sim-suffix**))
+		       **similix-compiled-sim-suffix**))
   '())
 
 ;-----------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------
-; Utility functions, not user visible
+; utility functions, not user visible
 
 (define _sim-sym/num/string-append
   (lambda ss
@@ -124,7 +124,7 @@
 		     s)
 		    (else
 		     (_sim-error '_sim-sym/num/string-append
-				 "Not a symbol/number/string: ~s"
+				 "not a symbol/number/string: ~s"
 				 s))))
 		 ss)))))
 
@@ -258,13 +258,13 @@
 		     ((symbol? y) (_sim-get-top-level-value y))
 		     (else
 		      (_sim-error
-		       '_sim-string-eval "Unexpected syntax: ~s" x))))
+		       '_sim-string-eval "unexpected syntax: ~s" x))))
 		 (cdr x))))
-    (else (_sim-error '_sim-string-eval "Unexpected syntax: ~s" x))))
+    (else (_sim-error '_sim-string-eval "unexpected syntax: ~s" x))))
 
 (define (_sim-get-top-level-value s)
   (let ((tmp-file (string-append
-		   **Similix-tmp-file** **Similix-source-suffix**)))
+		   **similix-tmp-file** **similix-source-suffix**)))
     (writef (list 'define '_sim-tmp-value s) tmp-file)
     (load tmp-file)
     (_sim-remove-file tmp-file)
@@ -272,7 +272,7 @@
 
 (define (_sim-load-program pgm)
   (let ((tmp-file (string-append
-		   **Similix-tmp-file** **Similix-source-suffix**)))
+		   **similix-tmp-file** **similix-source-suffix**)))
     (writel pgm tmp-file)
     (load tmp-file)
     (_sim-remove-file tmp-file)
@@ -295,13 +295,13 @@
 
 ;-----------------------------------------------------------------------------
 
-; Looking up:
+; looking up:
 (define (_sim-lookup name ns vs)
   (let loop
       ((ns ns) (vs vs))
     (cond
       ((or (null? ns) (null? vs))
-       (_sim-error '_sim-lookup "Name not found: ~s" name))
+       (_sim-error '_sim-lookup "name not found: ~s" name))
       ((equal? name (car ns))
        (car vs))
       (else
@@ -319,13 +319,13 @@
   (_sim-strip-name file ".sim"))
 
 (define (_sim-strip-source-name file)
-  (_sim-strip-name file **Similix-source-suffix**))
+  (_sim-strip-name file **similix-source-suffix**))
 
 (define (_sim-normalize-sim-name file)
   (string-append (_sim-strip-sim-name file) ".sim"))
 
 (define (_sim-normalize-source-name file)
-  (string-append (_sim-strip-source-name file) **Similix-source-suffix**))
+  (string-append (_sim-strip-source-name file) **similix-source-suffix**))
 
 (define (_sim-strip-name file suffix)
   (let ((l (string-length suffix)))

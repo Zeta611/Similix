@@ -303,7 +303,7 @@
 			 (gen-let `((,w ,(process test-exp)))
 				  (expand-casematch w alt* test-exp))))
 		   (_sim-error
-		    'case-compiler"Invalid casematch syntax: ~s" p)))
+		    'case-compiler"invalid casematch syntax: ~s" p)))
 	      ((equal? hd 'caseconstr)
 	       (if (caseconstr-syntax? p)
 		   (let ((test-exp (cadr p))
@@ -313,7 +313,7 @@
 			 (gen-let `((,w ,(process test-exp)))
 				  (expand-caseconstr w alt* test-exp))))
 		   (_sim-error
-		    'case-compiler "Invalid caseconstr syntax: ~s" p)))
+		    'case-compiler "invalid caseconstr syntax: ~s" p)))
 	      ((equal? hd 'quote)
 	       p)
 	      (else
@@ -333,23 +333,23 @@
 
 ;-----------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------
-; Adt-files
+; adt-files
 
-(load (string-append **Similix-path** "constr" **Similix-compiled-suffix**))
-
-;-----------------------------------------------------------------------------
-
-(define **Similix-udo** '())
-(define **Similix-udo-by-programs** '())
-(define **Similix-udo-by-files** '())
+(load (string-append **similix-path** "constr" **similix-compiled-suffix**))
 
 ;-----------------------------------------------------------------------------
-; Commands to load, unload, and load adt-files by force: 
+
+(define **similix-udo** '())
+(define **similix-udo-by-programs** '())
+(define **similix-udo-by-files** '())
+
+;-----------------------------------------------------------------------------
+; commands to load, unload, and load adt-files by force: 
 
 (define (loadt file)
   (let ((udo (_sim-fully-lazy-assoc-udo-file file)))
     (if (not (equal? (_sim-string-eval file)
-		     (string-append **Similix-library** "scheme.adt")))
+		     (string-append **similix-library** "scheme.adt")))
 	(_sim-load-program
 	 (map (lambda (entry)
 		(list 'define
@@ -364,17 +364,17 @@
 
 (define (unloadt file)
   (begin
-    (set! **Similix-udo-by-files**
-	  (_sim-remove-file-entry file **Similix-udo-by-files**))
-    (set! **Similix-udo-by-programs**
-	  (_sim-remove-program-entry file **Similix-udo-by-programs**))
+    (set! **similix-udo-by-files**
+	  (_sim-remove-file-entry file **similix-udo-by-files**))
+    (set! **similix-udo-by-programs**
+	  (_sim-remove-program-entry file **similix-udo-by-programs**))
     'unloadt-ed))
 
 (define (_sim-remove-file-entry file binding*)
   (_sim-remove-entry
    binding* (lambda (binding) (equal? file (car binding)))))
 
-; Filters the entries that do not depend on a file:
+; filters the entries that do not depend on a file:
 (define (_sim-remove-program-entry file binding*)
   (_sim-remove-entry
    binding* (lambda (binding) (member file (car binding)))))
@@ -390,13 +390,13 @@
        (cons (car l) (filter (cdr l)))))))
 
 ;-----------------------------------------------------------------------------
-; Read an adt-file
+; read an adt-file
 ;
-; Expands (load "<file.adt>")
+; expands (load "<file.adt>")
 ;
-; Leaves (defprim ...) unchanged
+; leaves (defprim ...) unchanged
 ;
-; Expands
+; expands
 ;   (defconstr (c0 s00 ... s0n) ... (cm sm0 ... smk))
 ; into
 ;   (def-cstr c0 n+1 (c0 ... cm) type-index body)
@@ -413,7 +413,7 @@
 ;   (def-sel  smk k cm body)
 ; where body is an expression implementing the operator.
 ; 
-; The user may write * instead of a name for a selector sij;
+; the user may write * instead of a name for a selector sij;
 ; in that case the selector will get the name ci.j 
 
 (define (_sim-read-adt-file file)
@@ -493,7 +493,7 @@
 	    (cons hd (loop tl r)))))))))
 
 ;-----------------------------------------------------------------------------
-; Accessing concrete syntax of adt-definitions
+; accessing concrete syntax of adt-definitions
 
 (define (_sim-fetch-op-form def)
   (if (and (pair? def) (pair? (cdr def)) (pair? (cddr def)))
@@ -505,18 +505,18 @@
 	((equal? (car def) 'def-pred)
 	 'pred)
 	((and (pair? (cadr def)) (symbol? (caadr def)) (list? (cdadr def)))
-	 'form1a)	; (defprim-Transp (O ...) ...)
+	 'form1a)	; (defprim-transp (o ...) ...)
 	((and (pair? (cadr def)) (symbol? (caadr def)) (symbol? (cdadr def)))
-	 'form1b)	; (defprim-Transp (O . V) ...)
+	 'form1b)	; (defprim-transp (o . v) ...)
 	((and (number? (cadr def)) (symbol? (caddr def))
 	      (pair? (cdddr def)) (symbol? (cadddr def)))
-	 'form2a)	; (defprim-Transp Arity O N)
+	 'form2a)	; (defprim-transp arity o n)
 	((and (symbol? (cadr def)) (pair? (cddr def)) (symbol? (caddr def)))
-	 'form2b)	; (defprim-Transp O N)
+	 'form2b)	; (defprim-transp o n)
 	(else
 	 (_sim-error
-	  '_sim-fetch-op-form "Unknown operator definition: ~s" def)))
-      (_sim-error '_sim-fetch-op-form "Unknown operator definition: ~s" def)))
+	  '_sim-fetch-op-form "unknown operator definition: ~s" def)))
+      (_sim-error '_sim-fetch-op-form "unknown operator definition: ~s" def)))
 
 (define _sim-fetch-op-kind car)
 
@@ -637,11 +637,11 @@
      (_sim-error '_sim-fetch-op-pred-cstr "unexpected argument: ~s" def))))
 
 ;-----------------------------------------------------------------------------
-; Fully lazy assoc udo (by program):
+; fully lazy assoc udo (by program):
 ; if the program has already been loaded the corresponding udo is returned,
 ; otherwise it is loaded and memoized, and the corresponding udo is returned.
 ;
-; If the ncl-version is called, a list of "dangerous" names is returned
+; if the ncl-version is called, a list of "dangerous" names is returned
 ; (ncl = name clash list); these are names which may clash with residual
 ; procedure and variable names;
 
@@ -653,7 +653,7 @@
 
 (define (_sim-fully-lazy-assoc-udo-pgm kind adt-file*)
   (let* ((adt-file* (map _sim-string-eval adt-file*))
-	 (binding (assoc adt-file* **Similix-udo-by-programs**)))
+	 (binding (assoc adt-file* **similix-udo-by-programs**)))
     (if (pair? binding)
 	(if (equal? kind 'udo)
 	    (cadr binding)
@@ -663,15 +663,15 @@
 					  adt-file*)))
 	       (ncl (_sim-map-append _sim-fully-lazy-assoc-udo-file-ncl
 				     adt-file*)))
-	  (set! **Similix-udo-by-programs**
+	  (set! **similix-udo-by-programs**
 		(cons (list adt-file* new-udo ncl)
-		      **Similix-udo-by-programs**))
+		      **similix-udo-by-programs**))
 	  (if (equal? kind 'udo)
 	      new-udo
 	      ncl)))))
 
 ;-----------------------------------------------------------------------------
-; Fully lazy assoc udo (by files):
+; fully lazy assoc udo (by files):
 ; if the file has already been loaded the corresponding udo is returned,
 ; otherwise it is loaded and memoized, and the corresponding udo is returned.
 
@@ -717,15 +717,15 @@
 					       ch '("-" "_"))))))))
 			  (cons name rest)
 			  rest))))))
-      (let ((binding (assoc file **Similix-udo-by-files**)))
+      (let ((binding (assoc file **similix-udo-by-files**)))
 	(if (pair? binding)
 	    (if (equal? kind 'udo)
 		(cadr binding)
 		(caddr binding))
 	    (let* ((new-udo (_sim-make-new-udo file))
 		   (ncl (find-dangerous-prim-names new-udo)))
-	      (set! **Similix-udo-by-files**
-		    (cons (list file new-udo ncl) **Similix-udo-by-files**))
+	      (set! **similix-udo-by-files**
+		    (cons (list file new-udo ncl) **similix-udo-by-files**))
 	      (if (equal? kind 'udo)
 		  new-udo
 		  ncl)))))))
@@ -856,18 +856,18 @@
 (define (_sim-fetch-udo-entry-attr v) (list-ref v 5))
 
 (define (_sim-fetch-udo-entry-from-index index)
-  (vector-ref **Similix-udo** index))
+  (vector-ref **similix-udo** index))
 
 (define (_sim-fetch-udo-entry e)
   (_sim-fetch-udo-entry-from-index
    ((cond
-     ((_sim-isPrimop? e)
+     ((_sim-isprimop? e)
       _sim-fetch-primop-index)
-     ((_sim-isCstr? e)
+     ((_sim-iscstr? e)
       _sim-fetch-cstr-index)
-     ((_sim-isSel? e)
+     ((_sim-issel? e)
       _sim-fetch-sel-index)
-     ((_sim-isPred? e)
+     ((_sim-ispred? e)
       _sim-fetch-pred-index)
      (else
       (_sim-error '_sim-fetch-udo-entry "unexpected argument: ~s" e)))
@@ -897,17 +897,17 @@
 
 (define (_sim-udo-apply* op v*)
   (apply (_sim-fetch-udo-entry-value
-	  (vector-ref **Similix-udo** (_sim-fetch-index-from-n+i op)))
+	  (vector-ref **similix-udo** (_sim-fetch-index-from-n+i op)))
 	 v*))
 
 (define (_sim-udo-apply op v)
   ((_sim-fetch-udo-entry-value
-    (vector-ref **Similix-udo** (_sim-fetch-index-from-n+i op)))
+    (vector-ref **similix-udo** (_sim-fetch-index-from-n+i op)))
    v))
 
 ;-----------------------------------------------------------------------------
-; Converting a .sim program into stand-alone Scheme
-; (which can run independently of the Similix system)
+; converting a .sim program into stand-alone scheme
+; (which can run independently of the similix system)
 
 (define (sim2scheme file)
   (letrec ((process-e* (lambda (e*) (process-e*1 e* '())))
@@ -952,7 +952,7 @@
       (writel (append
 	       (file->list
 		(string-append
-		 **Similix-path** "constr" **Similix-source-suffix**))
+		 **similix-path** "constr" **similix-source-suffix**))
 	       (process-e* (_sim-compile-casematch sim-file)))
 	      scheme-file))))
 

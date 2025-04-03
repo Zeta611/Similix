@@ -5,7 +5,7 @@
 
 ; -----------------------------------------------------------------------------
 
-(loadt (string-append **Similix-library** "spec.adt"))
+(loadt (string-append **similix-library** "spec.adt"))
 
 (define (_sim-specialize goal value* pgm residual-goal)
   (let* ((udp (_sim-fetch-pgm-udp pgm))
@@ -16,7 +16,7 @@
 	 (arity (length btp))
 	 (adt (_sim-fetch-pgm-adt-file* pgm)))
     ;-------------------------------------------------------------------------
-    ; Processing expressions:
+    ; processing expressions:
     
     (define (id-c) (lambda (value/rexp) value/rexp))
     
@@ -24,28 +24,28 @@
     
     (define (proc-e e r c)
       (cond
-	((_sim-isLift? e)
+	((_sim-islift? e)
 	 (proc-e (_sim-fetch-lift-arg e) r
 		 (lambda (value) (c (_sim-build-cst value)))))
-	((_sim-isCst? e)
+	((_sim-iscst? e)
 	 (c (_sim-fetch-cst-value e)))
-	((_sim-isVar? e)
+	((_sim-isvar? e)
 	 (c (lookup-env (_sim-fetch-var-debruijn e) r)))
-	((_sim-isCond? e)
+	((_sim-iscond? e)
 	 (let* ((test-part (_sim-fetch-cond-test e))
 		(then-part (_sim-fetch-cond-then e))
 		(else-part (_sim-fetch-cond-else e)))
 	   (proc-e
 	    test-part r
 	    (lambda (value/rexp)
-	      (if (and (_sim-isDynamic? test-part)
-		       (_sim-isDynamic? then-part))
-		  ; (_sim-isDynamic? else-part) also holds
+	      (if (and (_sim-isdynamic? test-part)
+		       (_sim-isdynamic? then-part))
+		  ; (_sim-isdynamic? else-part) also holds
 		  (let* ((rexp-then (proc-e then-part r (id-c)))
 			 (rexp-else (proc-e else-part r (id-c))))
 		    (c (_sim-build-cond value/rexp rexp-then rexp-else)))
 		  (let ((c (collapse1 c)))
-		    (if (_sim-isStatic? test-part)
+		    (if (_sim-isstatic? test-part)
 			(if value/rexp
 			    (proc-e then-part r c)
 			    (proc-e else-part r c))
@@ -53,13 +53,13 @@
 					 (proc-e then-part r c)
 					 (proc-e else-part r c))))))
 	    )))
-	((_sim-isLet? e)
+	((_sim-islet? e)
 	 (let* ((formal (_sim-fetch-let-formal e))
 		(actual (_sim-fetch-let-actual e))
 		(body (_sim-fetch-let-body e)))
 	   (proc-e
 	    actual r
-	    (if (_sim-isLet-unfoldable? e)
+	    (if (_sim-islet-unfoldable? e)
 		(lambda (value/rexp) (proc-e body (upd-env value/rexp r) c))
 		(lambda (rexp)
 		  (let ((residual-formal (_sim-generate-var-name!
@@ -69,34 +69,34 @@
 		     (proc-e
 		      body (upd-env (_sim-build-var residual-formal) r)
 		      c))))))))
-	((_sim-isBegin? e)
+	((_sim-isbegin? e)
 	 (let ((snd (_sim-fetch-begin-snd e)))
 	   (proc-e
 	    (_sim-fetch-begin-fst e) r
-	    (if (_sim-isBegin-unfoldable? e)
+	    (if (_sim-isbegin-unfoldable? e)
 		(lambda (value/rexp) (proc-e snd r c))
 		(lambda (rexp) (_sim-build-begin rexp (proc-e snd r c)))))))
-	((_sim-isPrimop? e)
+	((_sim-isprimop? e)
 	 (let ((name (_sim-fetch-primop-name e)))
 	   (proc-e*
-	    (_sim-fetch-primop-args e) r _sim-isImperative?
+	    (_sim-fetch-primop-args e) r _sim-isimperative?
 	    (cond
 	      ((member (_sim-fetch-primop-referentiality e) '(abort abort-eoi))
 	       (lambda (rexp*) (_sim-build-primop name rexp*)))
-	      ((_sim-isStatic? e)
+	      ((_sim-isstatic? e)
 	       (lambda (value*)
 		 (c (_sim-delta-reduce (_sim-fetch-primop-n+i e) value*))))
 	      (else
 	       (lambda (rexp*) (c (_sim-build-primop name rexp*))))))))
-	((_sim-isCstr? e)
+	((_sim-iscstr? e)
 	 (let ((e* (_sim-fetch-cstr-args e)))
-	   (if (_sim-isDynamic? e)
+	   (if (_sim-isdynamic? e)
 	       (proc-e*
-		e* r _sim-isImperative?
+		e* r _sim-isimperative?
 		(lambda (rexp*)
 		  (c (_sim-build-cstr (_sim-fetch-cstr-name e) rexp*))))
 	       (proc-e*
-		e* r _sim-isDynamic?
+		e* r _sim-isdynamic?
 		(let ((btp (_sim-fetch-bt-tag* e*)))
 		  (lambda (value/rexp*)
 		    (c (_sim-make-psds
@@ -113,7 +113,7 @@
 					; here _sim-make-constr-val is used
 					; to rebuild a value originally
 					; constructed by _sim-cstr-reduce;
-					; this is a HACK as it relies
+					; this is a hack as it relies
 					; on a particular implementation of
 					; _sim-cstr-reduce
 					(_sim-make-constr-val name new-v*)))
@@ -129,11 +129,11 @@
 			; built-in implementation is simply reused
 			(_sim-cstr-reduce
 			 (_sim-fetch-cstr-n+i e) value/rexp*)))))))))
-	((_sim-isSel? e)
+	((_sim-issel? e)
 	 (let ((arg (_sim-fetch-sel-arg e)))
 	   (proc-e
 	    arg r
-	    (if (_sim-isDynamic? arg)
+	    (if (_sim-isdynamic? arg)
 		(lambda (rexp)
 		  (c (_sim-build-sel (_sim-fetch-sel-name e)
 				     (_sim-fetch-sel-proj e)
@@ -142,10 +142,10 @@
 		(lambda (value)
 		  (c (_sim-sel-reduce
 		      (_sim-fetch-sel-n+i e) (_sim-get-psds-value value))))))))
-	((_sim-isPred? e)
+	((_sim-ispred? e)
 	 (let ((arg (_sim-fetch-pred-arg e)))
 	   (proc-e
-	    arg r (if (_sim-isDynamic? arg)
+	    arg r (if (_sim-isdynamic? arg)
 		      (lambda (rexp)
 			(c (_sim-build-pred (_sim-fetch-pred-name e)
 					    (_sim-fetch-pred-cstr e)
@@ -154,7 +154,7 @@
 			(c (_sim-pred-reduce
 			    (_sim-fetch-pred-n+i e)
 			    (_sim-get-psds-value value))))))))
-	((_sim-isPcall? e)
+	((_sim-ispcall? e)
 	 (let ((def (_sim-fetch-udp-def udp e)))
 	   (if (_sim-unfoldable-procedure? def)
 	       (let* ((e* (_sim-fetch-pcall-args e))
@@ -169,18 +169,18 @@
 		       (c (init-env))
 		       (let ((e (list-ref e* offset)))
 			 (proc-e-insert-let-if-pred
-			  e r _sim-isImperative?
+			  e r _sim-isimperative?
 			  (lambda (value/rexp)
 			    (loop
 			     (+ 1 offset)
 			     (lambda (new-r)
 			       (c (upd-env value/rexp new-r))))))))))
 	       (specialize-pcall def e r c))))
-    	((_sim-isAbs? e)
+    	((_sim-isabs? e)
 	 (let* ((free* (_sim-fetch-abs-free-variable-debruijns e))
 		(arity-free (length free*))
 		(body (_sim-fetch-abs-body e)))
-	   (c (if (_sim-isClosure? e)
+	   (c (if (_sim-isclosure? e)
 		  ; make a closure:
 		  (_sim-make-closure
 		   (_sim-fetch-abs-index e)
@@ -244,15 +244,15 @@
 				    (c (upd-env
 					(_sim-build-var residual-formal) r2)
 				       (cons residual-formal rf*))))))))))))
-	(else ;; (_sim-isApp? e)
+	(else ;; (_sim-isapp? e)
 	 (let* ((exp (_sim-fetch-app-exp e))
 		(e* (_sim-fetch-app-args e)))
 	   (proc-e-insert-let-if-pred
-	    exp r _sim-isImperative?
-	    (if (_sim-isClosure? exp)
+	    exp r _sim-isimperative?
+	    (if (_sim-isclosure? exp)
 		(lambda (value)
 		  (proc-e*
-		   e* r _sim-isImperative?
+		   e* r _sim-isimperative?
 		   (let* ((free-var-values (_sim-get-closure-values value))
 			  (activation (_sim-get-closure-activation value)))
 		     (lambda (arg-values)
@@ -261,7 +261,7 @@
 				   (lambda (value/rexp) (c value/rexp)))))))
 		(lambda (rexp)
 		  (proc-e*
-		   e* r _sim-isImperative?
+		   e* r _sim-isimperative?
 		   (lambda (rexp*) (c (_sim-build-app rexp rexp*)))))))))))
     
     (define (proc-e* e* r pred c)
@@ -289,7 +289,7 @@
 	       c)))
     
     ;-------------------------------------------------------------------------
-    ; Specializing procedure calls:
+    ; specializing procedure calls:
     
     (define (specialize-pcall def e r c)
       (let* ((formal* (_sim-fetch-def-pars def))
@@ -317,7 +317,7 @@
 		     (formal (list-ref formal* offset))
 		     (e (list-ref e* offset)))
 		(proc-e-insert-let-if-pred
-		 e r _sim-isImperative?
+		 e r _sim-isimperative?
 		 (lambda (value/rexp)
 		   (loop
 		    (+ 1 offset)
@@ -398,7 +398,7 @@
 			 ))))))))
     
     ;-------------------------------------------------------------------------
-    ; Environments:
+    ; environments:
     
     (define (init-env) (_sim-binding-nil))
     (define (upd-env value r) (_sim-binding-cons value r))
@@ -432,7 +432,7 @@
 		       (loop (+ 1 offset)))))))
     
     ;-------------------------------------------------------------------------
-    ; Collapsing continuations:
+    ; collapsing continuations:
     
     (define (collapse1 cont)
       (let ((cont1 (lambda (a) (cont a))))
@@ -445,7 +445,7 @@
 	  ((if #t cont1 (_sim-generalize cont1)) a b c d e f))))
     
     ;-------------------------------------------------------------------------
-    ; Main program body:
+    ; main program body:
     
     (_sim-initialize-magic! adt)
     (specialize-pcall

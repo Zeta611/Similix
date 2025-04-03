@@ -5,7 +5,7 @@
 
 ;-----------------------------------------------------------------------------
 (define (_sim-front-end goal-name file)
-  ; Syntactic expansion of the following Scheme standard expression forms:
+  ; syntactic expansion of the following scheme standard expression forms:
   ;	cond-expressions -> if-expressions
   ;	and-expressions -> if-expressions
   ;	or-expressions -> if-expression
@@ -22,7 +22,7 @@
   
   ; =========================================================================
   
-  ; Misc. operations over concrete syntax:
+  ; misc. operations over concrete syntax:
   
   (define fetch-define-bodies cddr)
   (define fetch-d-define-bodies cdr)
@@ -91,7 +91,7 @@
   (define (rebuild-concrete-syntax-symbol name n* v*)
     (cond
       ((null? n*)
-       name)		; The symbol might not be defined in the environment
+       name)		; the symbol might not be defined in the environment
       ((equal? name (car n*))
        (car v*))
       (else
@@ -208,7 +208,7 @@
     (cons 'letrec (cons bindings bodies)))
   
   ; =========================================================================
-  ; Macro expansion
+  ; macro expansion
 
   (define (macro-expand-exp! a-e n* v* ncl)
     (let ((e (car a-e)))
@@ -293,7 +293,7 @@
 	(cond
 	  ((null? tl)
 	   (_sim-error 'split-list!
-		       "No expression following definitions in ~s"
+		       "no expression following definitions in ~s"
 		       d+e*))
 	  ((is-define? (cadr x)) (loop tl))
 	  (else (set-cdr! x '()) tl)))))
@@ -330,7 +330,7 @@
 		   (rebuild-concrete-syntax-if
 		    (car a-test) (cadr d-then) (loop rest)))))
 	      (_sim-error 'macro-expand-cond-expression!
-			  "Not legal in cond-expressions: ~s"
+			  "not legal in cond-expressions: ~s"
 			  c*)))))
   
   (define (macro-expand-and-expression! e* n* v* ncl)
@@ -346,7 +346,7 @@
 		       (rebuild-concrete-syntax-if
 			(car a-e) (loop r) #f)))))))
   
-  ;  (or E1 ...) --> (let ((g32 E1)) (if g32 g32 ...))
+  ;  (or e1 ...) --> (let ((g32 e1)) (if g32 g32 ...))
   (define (macro-expand-or-expression! e* n* v* ncl)
     (if (null? e*)
 	#f
@@ -450,7 +450,7 @@
 		name))))))
   
   
-  ; Avoid shadowing when generating variables with get-new-var;
+  ; avoid shadowing when generating variables with get-new-var;
   ; the name-clash-list (ncl) is initialized by find-dangerous-names;
   ; the name-clash-list is extended when processing definitions,
   ; let, letrec, and lambda
@@ -480,7 +480,7 @@
 	  (loop (cdr d*) (test-name (fetch-define-name (car d*)) ncl)))))
   
   ; =========================================================================
-  ; Conversion to abstract syntax
+  ; conversion to abstract syntax
 
   (define (init-env) '())
   (define (upd-env-var varname r) (cons (cons 'var varname) r))
@@ -504,8 +504,8 @@
       (else (lookup name (cdr r)))))
   
     
-  ; Conversion of a concrete expression into an abstract one + expansions
-  ; P --> (lambda (...) (P ...)) and O --> (lambda (...) (O ...))
+  ; conversion of a concrete expression into an abstract one + expansions
+  ; p --> (lambda (...) (p ...)) and o --> (lambda (...) (o ...))
   ;
   (define (make-abstract-syntax-expr! e n* udo)
     (cond
@@ -528,7 +528,7 @@
   
   (define (make-abs-syn-exp1 e n* udo)
     ; concrete-syntax-prim/cstr/sel/pred-name?
-    ; O --> (lambda (...) (O ...))
+    ; o --> (lambda (...) (o ...))
     (if (symbol? e)
 	(let loop ((offset (- (vector-length udo) 1)))
 	  (if (= offset -1)
@@ -628,7 +628,7 @@
       (let loop ((offset (- (vector-length udo) 1)))
 	(cond
 	  ((= offset -1)
-	   (_sim-error 'make-abs-syn-exp4 "Constructor not defined: ~s" name))
+	   (_sim-error 'make-abs-syn-exp4 "constructor not defined: ~s" name))
 	  ((equal? name (_sim-fetch-udo-entry-name (vector-ref udo offset)))
 	   offset)
 	  (else
@@ -782,7 +782,7 @@
 		    (let loop ((l adt-file*) (new-l '()))
 		      (if (null? l)
 			  (cons
-			   '(string-append **Similix-library** "scheme.adt")
+			   '(string-append **similix-library** "scheme.adt")
 			   new-l)
 			  (let ((f (car l))
 				(r (cdr l)))
@@ -810,7 +810,7 @@
 				   (test-name* formals ncl))
 				  (loop (cdr def*) (cons d new-def*)))
 				(_sim-error 'front-end
-					    "Procedure defined twice: ~s"
+					    "procedure defined twice: ~s"
 					    name)))))))
 	      
 	      ;; (pp concr-def*)
@@ -859,7 +859,7 @@
 				    (lambda ()
 				      (_sim-error
 				       'front-end
-				       "Undefined goal procedure: ~s"
+				       "undefined goal procedure: ~s"
 				       goal-name)))
 				   goal-formalvarnames))
 				 defs))))
@@ -876,19 +876,19 @@
 		  (_sim-set-pgm-udp! pgm new-udp)
 
 		  ; finally, compute free-vars fields of abstractions and
-		  ; copmpute Debruijn-indices of variable occurrences
-		  ; (in that order, _sim-deBruijn! uses the free-vars fields)
+		  ; copmpute debruijn-indices of variable occurrences
+		  ; (in that order, _sim-debruijn! uses the free-vars fields)
 		  (_sim-vector-for-each
 		   (lambda (d)
 		     (let ((body (_sim-fetch-def-exp d)))
 		       (_sim-add-free-vars-of-abstractions! body)
-		       (_sim-deBruijn! body (_sim-fetch-def-pars d))))
+		       (_sim-debruijn! body (_sim-fetch-def-pars d))))
 		   new-udp)
-		  pgm)))))) ; Return point
+		  pgm)))))) ; return point
     (if (null? l)
-	; Finished, convert to abstract syntax:
+	; finished, convert to abstract syntax:
 	(c adt-file* def*)
-	; Continue:
+	; continue:
 	(let ((e (car l))
 	      (rest (cdr l)))
 	  (cond
@@ -917,6 +917,6 @@
 	    ;;    (_sim-eval e)
 	    ;;    (loop rest adt-file* def* c)))
 	    (else
-	     (_sim-error 'front-end "Not a legal expression: ~s" e)))))))
+	     (_sim-error 'front-end "not a legal expression: ~s" e)))))))
 
 ; -----------------------------------------------------------------------------

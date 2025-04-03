@@ -6,9 +6,9 @@
 ;-----------------------------------------------------------------------------
 ; Switch for standard memoization points:
 
-(define **Similix-standard-memoization** #t)
-(define (standard-memoization-on) (set! **Similix-standard-memoization** #t))
-(define (standard-memoization-off) (set! **Similix-standard-memoization** #f))
+(define **similix-standard-memoization** #t)
+(define (standard-memoization-on) (set! **similix-standard-memoization** #t))
+(define (standard-memoization-off) (set! **similix-standard-memoization** #f))
 
 (define (_sim-memoize e) e)
 
@@ -48,38 +48,38 @@
       (let* ((e (_sim-fetch-def-exp d))
 	     (nam (_sim-sym/num/string-append (_sim-fetch-def-name d) "-")))
 
-	; The boolean "ins" is returned by sp! when processing e; ins is
+	; the boolean "ins" is returned by sp! when processing e; ins is
 	; #t if a new call must replace some outer expression containing e.
 	;
-	; Specialization point insertion strategy: specialization points
+	; specialization point insertion strategy: specialization points
 	; are inserted in expressions containing dynamic conditionals or
 	; dynamic "non-trivial" lambda abstractions (controlled by a flag
 	; that may switch standard insertions points off).
-	; The insertion points are at static conditionals, at static
+	; the insertion points are at static conditionals, at static
 	; (or, in principle, dynamic "trivial") lambda abstractions,
 	; and in argument positions of other compound expressions with
 	; non-dynamic result (to prevent inserting a specialization point
 	; at a non-dynamic point later on).
 	;
-	; Specialization points are always inserted at the primitive
-	; operation (_sim-memoize E) (and #f is returned as ins value).
+	; specialization points are always inserted at the primitive
+	; operation (_sim-memoize e) (and #f is returned as ins value).
 	
 	(define (sp! e)
 	  (cond
-	    ((_sim-isLift? e)
+	    ((_sim-islift? e)
 	     (sp! (_sim-fetch-lift-arg e)))
-	    ((_sim-isCst? e)
+	    ((_sim-iscst? e)
 	     #f)
-	    ((_sim-isVar? e)
+	    ((_sim-isvar? e)
 	     #f)
-	    ((_sim-isCond? e)
+	    ((_sim-iscond? e)
 	     (let* ((cond-test (_sim-fetch-cond-test e))
 		    (cond-then (_sim-fetch-cond-then e))
 		    (cond-else (_sim-fetch-cond-else e))
 		    (ins-test (sp! cond-test))
 		    (ins-then (sp! cond-then))
 		    (ins-else (sp! cond-else)))
-	       (or (_sim-isDynamic? cond-test)
+	       (or (_sim-isdynamic? cond-test)
 		   (begin
 		     (if ins-then
 			 (_sim-set-cond-then!
@@ -88,10 +88,10 @@
 			 (_sim-set-cond-else!
 			  e (standard-insert-pcall! cond-else)))
 		     #f))))
-	    ((_sim-isLet? e)
+	    ((_sim-islet? e)
 	     (let* ((actual (_sim-fetch-let-actual e))
 		    (body (_sim-fetch-let-body e)))
-	       (if (_sim-isDynamic? e)
+	       (if (_sim-isdynamic? e)
 		   (_sim-strict-or (sp! actual) (sp! body))
 		   (begin
 		     (if (sp! actual)
@@ -100,10 +100,10 @@
 		     (if (sp! body)
 			 (_sim-set-let-body! e (standard-insert-pcall! body)))
 		     #f))))
-	    ((_sim-isBegin? e)
+	    ((_sim-isbegin? e)
 	     (let* ((fst (_sim-fetch-begin-fst e))
 		    (snd (_sim-fetch-begin-snd e)))
-	       (if (_sim-isDynamic? e)
+	       (if (_sim-isdynamic? e)
 		   (_sim-strict-or (sp! fst) (sp! snd))
 		   (begin
 		     (if (sp! fst)
@@ -111,45 +111,45 @@
 		     (if (sp! snd)
 			 (_sim-set-begin-snd! e (standard-insert-pcall! snd)))
 		     #f))))
-	    ((_sim-isPrimop? e)
+	    ((_sim-isprimop? e)
 	     (let ((e* (_sim-fetch-primop-args e)))
 	       (if (equal? (_sim-fetch-primop-name e) '_sim-memoize)
 		   (begin
 		     (set-car! e* (insert-pcall! (car e*)))
 		     #f)
 		   (sp*! e e*))))
-	    ((_sim-isCstr? e)
+	    ((_sim-iscstr? e)
 	     (sp*! e (_sim-fetch-cstr-args e)))
-	    ((_sim-isSel? e)
+	    ((_sim-issel? e)
 	     (let ((arg (_sim-fetch-sel-arg e)))
-	       (if (_sim-isDynamic? e)
+	       (if (_sim-isdynamic? e)
 		   (sp! arg)
 		   (begin (if (sp! arg)
 			      (_sim-set-sel-arg!
 			       e (standard-insert-pcall! arg)))
 			  #f))))
-	    ((_sim-isPred? e)
+	    ((_sim-ispred? e)
 	     (let ((arg (_sim-fetch-pred-arg e)))
-	       (if (_sim-isDynamic? e)
+	       (if (_sim-isdynamic? e)
 		   (sp! arg)
 		   (begin (if (sp! arg)
 			      (_sim-set-pred-arg!
 			       e (standard-insert-pcall! arg)))
 			  #f))))
-	    ((_sim-isPcall? e)
+	    ((_sim-ispcall? e)
 	     (sp*! e (_sim-fetch-pcall-args e)))
-	    ((_sim-isAbs? e)
+	    ((_sim-isabs? e)
 	     (let* ((body (_sim-fetch-abs-body e))
 		    (ins (sp! body)))
-	       (or (and (_sim-isDynamic? e) (not (trivial? body)))
+	       (or (and (_sim-isdynamic? e) (not (trivial? body)))
 		   (begin
 		     (if ins (_sim-set-abs-body!
 			      e (standard-insert-pcall! body)))
 		     #f))))
-	    ((_sim-isApp? e)
+	    ((_sim-isapp? e)
 	     (let ((exp (_sim-fetch-app-exp e))
 		   (e* (_sim-fetch-app-args e)))
-	       (if (_sim-isDynamic? e)
+	       (if (_sim-isdynamic? e)
 		   (_sim-strict-or (sp! exp) (sp*-propagate! e*))
 		   (begin
 		     (if (sp! exp) ; impossible in practice
@@ -159,7 +159,7 @@
 	     (_sim-error 'sp! "unknown syntactic form: ~s" e))))
 	
 	(define (sp*! e e*)
-	  (if (_sim-isDynamic? e)
+	  (if (_sim-isdynamic? e)
 	      (sp*-propagate! e*)
 	      (sp*-insert! e e*)))
 	
@@ -183,7 +183,7 @@
 	; standard-insert-pcall! calls insert-pcall! or just returns its
 	; argument
 	(define (standard-insert-pcall! e)
-	  (if **Similix-standard-memoization**
+	  (if **similix-standard-memoization**
 	      (insert-pcall! e)
 	      e))
 	; insert-pcall! generates a fresh procedure and returns
@@ -195,7 +195,7 @@
 			      nam (_sim-genint! 'next))))
 		      (if (member n proc-names) (loop) n))))
 		 (free-vars (_sim-find-free-vars e '()))
-		 ; Copy free-vars because of side-effects in _sim-deBruijn!:
+		 ; copy free-vars because of side-effects in _sim-debruijn!:
 		 (arg* (map _sim-copy free-vars)) 
 		 (par (map _sim-fetch-var-varname free-vars))
 		 (btp (map _sim-fetch-bt-tag free-vars))
@@ -207,29 +207,29 @@
 				 name par btp
 				 (insert-let-expressions-sp
 				  e par btp bt-tag eod-tag))))
-		       ; Here the side-effects occur:
-		       (begin (_sim-deBruijn! (_sim-fetch-def-exp def)
+		       ; here the side-effects occur:
+		       (begin (_sim-debruijn! (_sim-fetch-def-exp def)
 					      (_sim-fetch-def-pars def))
 			      def))))
 		(set! new-procedures (cons new-def new-procedures)))
 	      (_sim-make-abstract-syntax-inserted-pcall
 	       (_sim-fetch-bt-tag e)
 	       name
-	       (- (+ udp-arity (length new-procedures)) 1) ; HACK!
+	       (- (+ udp-arity (length new-procedures)) 1) ; hack!
 	       arg*))))
 	
 	(_sim-genint! 'reset)
 	(if (sp! e) (_sim-set-def-exp! d (standard-insert-pcall! e)))
-	(_sim-deBruijn! (_sim-fetch-def-exp d) (_sim-fetch-def-pars d))))
+	(_sim-debruijn! (_sim-fetch-def-exp d) (_sim-fetch-def-pars d))))
     
     ;------------------------------------------------------------------------
     
-    ; The bodies of some lambda abstractions are considered "trivial";
+    ; the bodies of some lambda abstractions are considered "trivial";
     ; no folding is performed for these abstractions.
     (define (trivial? e)
-      (or (_sim-isCst? e)
-	  (_sim-isVar? e)
-	  (and (_sim-isLet? e)
+      (or (_sim-iscst? e)
+	  (_sim-isvar? e)
+	  (and (_sim-islet? e)
 	       (trivial? (_sim-fetch-let-actual e))
 	       (trivial? (_sim-fetch-let-body e)))))
     

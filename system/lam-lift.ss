@@ -53,43 +53,43 @@
 	(define (find-calls-to-mutuals e index)
 	  (let loop ((e e))
 	    (cond
-	      ((_sim-isLift? e)
+	      ((_sim-islift? e)
 	       (loop (_sim-fetch-lift-arg e)))
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       '())
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       '())
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (union (loop (_sim-fetch-cond-test e))
 		      (union (loop (_sim-fetch-cond-then e))
 			     (loop (_sim-fetch-cond-else e)))))
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (union (loop (_sim-fetch-let-actual e))
 		      (loop (_sim-fetch-let-body e))))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (union (loop (_sim-fetch-begin-fst e))
 		      (loop (_sim-fetch-begin-snd e))))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (unionmap loop (_sim-fetch-primop-args e)))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (unionmap loop (_sim-fetch-cstr-args e)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (loop (_sim-fetch-sel-arg e)))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (loop (_sim-fetch-pred-arg e)))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (let* ((res (unionmap loop (_sim-fetch-pcall-args e)))
 		      (index2 (_sim-fetch-pcall-index e)))
 		 (if (and (member index2 indices)
 			  (not (equal? index index2)))
 		     (insert index2 res)
 		     res)))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (loop (_sim-fetch-abs-body e)))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (union (loop (_sim-fetch-app-exp e))
 		      (unionmap loop (_sim-fetch-app-args e))))
-	      ((_sim-isLetrec? e)
+	      ((_sim-isletrec? e)
 	       (union
 		(unionmap (lambda (d) (loop (_sim-fetch-def-exp d)))
 			  (_sim-fetch-letrec-defs e))
@@ -127,7 +127,7 @@
 		   (lambda (group)
 		     (if (>= group i)
 			 (_sim-error '_sim-lambda-lift!
-				     "Internal error --- topological order not satisfied in ~s"
+				     "internal error --- topological order not satisfied in ~s"
 				     connections))
 		     (if (not (= group 0)) ; ignore calls from pseudo node
 			 (_sim-list-set!
@@ -146,47 +146,47 @@
     (define (add-vars-to-proc-calls e indices varexps*)
       (let loop ((e e))
 	(cond
-	  ((_sim-isLift? e)
+	  ((_sim-islift? e)
 	   (loop (_sim-fetch-lift-arg e)))
-	  ((_sim-isCst? e)
+	  ((_sim-iscst? e)
 	   "nothing here")
-	  ((_sim-isVar? e)
+	  ((_sim-isvar? e)
 	   "nothing here")
-	  ((_sim-isCond? e)
+	  ((_sim-iscond? e)
 	   (loop (_sim-fetch-cond-test e))
 	   (loop (_sim-fetch-cond-then e))
 	   (loop (_sim-fetch-cond-else e)))
-	  ((_sim-isLet? e)
+	  ((_sim-islet? e)
 	   (loop (_sim-fetch-let-actual e))
 	   (loop (_sim-fetch-let-body e)))
-	  ((_sim-isBegin? e)
+	  ((_sim-isbegin? e)
 	   (loop (_sim-fetch-begin-fst e))
 	   (loop (_sim-fetch-begin-snd e)))
-	  ((_sim-isPrimop? e)
+	  ((_sim-isprimop? e)
 	   (for-each loop (_sim-fetch-primop-args e)))
-	  ((_sim-isCstr? e)
+	  ((_sim-iscstr? e)
 	   (for-each loop (_sim-fetch-cstr-args e)))
-	  ((_sim-isSel? e)
+	  ((_sim-issel? e)
 	   (loop (_sim-fetch-sel-arg e)))
-	  ((_sim-isPred? e)
+	  ((_sim-ispred? e)
 	   (loop (_sim-fetch-pred-arg e)))
-	  ((_sim-isPcall? e)
+	  ((_sim-ispcall? e)
 	   (for-each loop (_sim-fetch-pcall-args e))
 	   (let ((index (_sim-fetch-pcall-index e)))
 	     (if (member index indices)
-		 ; Copy vars because of side-effects in _sim-deBruijn!:
+		 ; copy vars because of side-effects in _sim-debruijn!:
 		 (let ((new-args (_sim-copy
 				  (_sim-lookup index indices varexps*)))
 		       (args (_sim-fetch-pcall-args e)))
 		   (if (null? args)
 		       (_sim-set-pcall-args! e new-args)
 		       (append! args new-args))))))
-	  ((_sim-isAbs? e)
+	  ((_sim-isabs? e)
 	   (loop (_sim-fetch-abs-body e)))
-	  ((_sim-isApp? e)
+	  ((_sim-isapp? e)
 	   (loop (_sim-fetch-app-exp e))
 	   (for-each loop (_sim-fetch-app-args e)))
-	  ((_sim-isLetrec? e)
+	  ((_sim-isletrec? e)
 	   (for-each (lambda (d) (loop (_sim-fetch-def-exp d)))
 		     (_sim-fetch-letrec-defs e))
 	   (loop (_sim-fetch-letrec-body e)))
@@ -217,10 +217,10 @@
     
     
     ;-------------------------------------------------------------------------
-    ; This procedure finds strongly connected components in a graph.
-    ; The first node in the input is the root node.
+    ; this procedure finds strongly connected components in a graph.
+    ; the first node in the input is the root node.
     ; 
-    ; Example:
+    ; example:
     ; 
     ; (find-strong-components
     ;  (list (vector '27   '(4c 3 1)   )  ; root node
@@ -239,20 +239,20 @@
     ;	 ^    ^	  ^	^   ^
     ;	 0    1	  2	3   4
     ; 
-    ; There are thus 5 components (0 through 4); e.g., component no. 2 contains
+    ; there are thus 5 components (0 through 4); e.g., component no. 2 contains
     ; the nodes 3 and 9, components no. 4 contains the nodes 4c, 5b, 8, hugo,
     ; and 7.
-    ; The second part of the output shows e.g. that there is an arc to
+    ; the second part of the output shows e.g. that there is an arc to
     ; component no. 2 from component no. 0 and that there are arcs to
     ; component no. 4 from components no. 0, 2, and 3.
-    ; The first output part is a list, the second part is a vector of
+    ; the first output part is a list, the second part is a vector of
     ; equal length.
     ;
     (define (find-strong-components graph)
-      ; Graph  ::= (Node*)
-      ; Node   ::= #(NodeId Arc*)
-      ; Arc    ::= NodeId
-      ; NodeId ::= "any Scheme type"
+      ; graph  ::= (node*)
+      ; node   ::= #(nodeid arc*)
+      ; arc    ::= nodeid
+      ; nodeid ::= "any scheme type"
       (let ((_nodeid 0)
 	    (_arcs 1))
 	
@@ -261,35 +261,35 @@
 	  (let loop ((node* graph) (number 0))
 	    (cond
 	      ((null? node*)
-	       (_sim-error 'find-strong-components "Node-id not found: ~s" id))
+	       (_sim-error 'find-strong-components "node-id not found: ~s" id))
 	      ((equal? id (vector-ref (car node*) _nodeid)) number)
 	      (else (loop (cdr node*) (+ 1 number))))))
 	(define (nodenumber->nodeid number)
 	  (vector-ref (list-ref graph number) _nodeid))
 	
 	
-	; This procedure does the actual work.
-	; The procedure finds strongly connected components in a graph.
-	; It implements the algotithm from Alfred V. Aho, John E. Hopcroft,
-	; Jeffrey D. Ullman: "The Design and Analysis of Computer Algorithms",
-	; pp. 189--195, Addison-Wesley, 197?.
+	; this procedure does the actual work.
+	; the procedure finds strongly connected components in a graph.
+	; it implements the algotithm from alfred v. aho, john e. hopcroft,
+	; jeffrey d. ullman: "the design and analysis of computer algorithms",
+	; pp. 189--195, addison-wesley, 197?.
 	(define (find-strong g)
-	  ; Assumed: input graph is rooted; first node is the root
-	  ; Graph	  ::= #(Node*)
-	  ; Node	  ::= #(Nodenumber Arcs Dfnumber Mark Lowlink
-	  ;		       InterComCalls Group)
-	  ; Arcs	  ::= (Nodenumber*)
-	  ; Dfnumber	  ::= Number
-	  ; Lowlink	  ::= Number
-	  ; InterComCalls ::= (Nodenumber*) ; the nodes FROM which arcs go
+	  ; assumed: input graph is rooted; first node is the root
+	  ; graph	  ::= #(node*)
+	  ; node	  ::= #(nodenumber arcs dfnumber mark lowlink
+	  ;		       intercomcalls group)
+	  ; arcs	  ::= (nodenumber*)
+	  ; dfnumber	  ::= number
+	  ; lowlink	  ::= number
+	  ; intercomcalls ::= (nodenumber*) ; the nodes from which arcs go
 	  ;                                 ; to this node
-	  ; Group	  ::= Number
+	  ; group	  ::= number
 	  ;
-	  ; Stack	  ::= (Dfnumber*)
-	  ; Instack?	  ::= #(Boolean*)
+	  ; stack	  ::= (dfnumber*)
+	  ; instack?	  ::= #(boolean*)
 	  ;
-	  ; GroupGraph	  ::= #(GroupCalls*)
-	  ; GroupCalls*	  ::= (Group*)
+	  ; groupgraph	  ::= #(groupcalls*)
+	  ; groupcalls*	  ::= (group*)
 	  ;
 	  (let ((counter 1)
 		(components '())
@@ -341,7 +341,7 @@
 					  _lowlink
 					  (min (vector-ref node-w _dfnumber)
 					       (vector-ref node-v _lowlink)))))
-		     ; Added to original algotithm find inter-component calls:
+		     ; added to original algotithm find inter-component calls:
 		     (if (not (vector-ref instack? w))
 			 ; there is an inter-component call from v to w:
 			 (vector-set!
@@ -365,7 +365,7 @@
 		  (let ((group-graph (make-vector i '())))
 		    (let loop ((i 0) (c* components))
 		      (if (null? c*)
-			  (cons components group-graph) ; Return place
+			  (cons components group-graph) ; return place
 			  (begin
 			    (for-each
 			     (lambda (v)
@@ -413,7 +413,7 @@
     
     ;-------------------------------------------------------------------------
     (define (proc e)
-      (if (_sim-isLetrec? e)
+      (if (_sim-isletrec? e)
 	  ; the order in which procedures are lifted out here has to match
 	  ; the indexing scheme used in procedure _sim-compute-proc-indices!
 	  (let ((defs (_sim-fetch-letrec-defs e))
@@ -461,35 +461,35 @@
 
 	  (begin
 	    (cond
-	      ((_sim-isLift? e)
+	      ((_sim-islift? e)
 	       (_sim-set-lift-arg! e (proc (_sim-fetch-lift-arg e))))
-	      ((_sim-isCst? e)
+	      ((_sim-iscst? e)
 	       "nothing here")
-	      ((_sim-isVar? e)
+	      ((_sim-isvar? e)
 	       "nothing here")
-	      ((_sim-isCond? e)
+	      ((_sim-iscond? e)
 	       (_sim-set-cond-test! e (proc (_sim-fetch-cond-test e)))
 	       (_sim-set-cond-then! e (proc (_sim-fetch-cond-then e)))
 	       (_sim-set-cond-else! e (proc (_sim-fetch-cond-else e))))
-	      ((_sim-isLet? e)
+	      ((_sim-islet? e)
 	       (_sim-set-let-actual! e (proc (_sim-fetch-let-actual e)))
 	       (_sim-set-let-body! e (proc (_sim-fetch-let-body e))))
-	      ((_sim-isBegin? e)
+	      ((_sim-isbegin? e)
 	       (_sim-set-begin-fst! e (proc (_sim-fetch-begin-fst e)))
 	       (_sim-set-begin-snd! e (proc (_sim-fetch-begin-snd e))))
-	      ((_sim-isPrimop? e)
+	      ((_sim-isprimop? e)
 	       (proc* (_sim-fetch-primop-args e)))
-	      ((_sim-isCstr? e)
+	      ((_sim-iscstr? e)
 	       (proc* (_sim-fetch-cstr-args e)))
-	      ((_sim-isSel? e)
+	      ((_sim-issel? e)
 	       (_sim-set-sel-arg! e (proc (_sim-fetch-sel-arg e))))
-	      ((_sim-isPred? e)
+	      ((_sim-ispred? e)
 	       (_sim-set-pred-arg! e (proc (_sim-fetch-pred-arg e))))
-	      ((_sim-isPcall? e)
+	      ((_sim-ispcall? e)
 	       (proc* (_sim-fetch-pcall-args e)))
-	      ((_sim-isAbs? e)
+	      ((_sim-isabs? e)
 	       (_sim-set-abs-body! e (proc (_sim-fetch-abs-body e))))
-	      ((_sim-isApp? e)
+	      ((_sim-isapp? e)
 	       (_sim-set-app-exp! e (proc (_sim-fetch-app-exp e)))
 	       (proc* (_sim-fetch-app-args e)))
 	      (else
